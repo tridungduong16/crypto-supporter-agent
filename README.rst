@@ -21,6 +21,7 @@ Python Boilerplate contains all the boilerplate you need to create a Python pack
 docker-compose up -d
 
 http://localhost:4444/
+docker run -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent
 
 * Free software: MIT license
 * Documentation: https://ai.readthedocs.io.

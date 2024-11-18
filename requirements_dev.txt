@@ -27,3 +27,5 @@ llama-index-embeddings-azure-openai
 coinmarketcap
 python-coinmarketcap
 cryptocompare
+python-binance
+llama-index-embeddings-huggingface

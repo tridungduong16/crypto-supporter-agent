@@ -12,6 +12,8 @@ from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.core import StorageContext
 from binance.client import Client
 from llama_index.core.tools import FunctionTool
+from src.agents.tools import create_query_engine_tools
+# from create_query_engine_tools
 
 # Load environment variables from .env file
 load_dotenv()
@@ -38,30 +40,30 @@ class AIApplication:
         self.embed_model = HuggingFaceEmbedding(model_name=model_name)
         storage_context = StorageContext.from_defaults(vector_store=self.vector_store)
         self.index = VectorStoreIndex.from_documents(self.documents, storage_context=storage_context, embed_model=self.embed_model)
-    
-        multiply_tool = FunctionTool.from_defaults(fn=self.get_crypt_information, name="crypto_tool")
-
-        self.query_engine = self.index.as_query_engine(similarity_top_k=2)
-        self.query_engine_tools = [
-            QueryEngineTool(
-                query_engine=self.query_engine,
-                metadata=ToolMetadata(
-                    name="duong_tri_dung_information",
-                    description="Provide information about Duong Tri Dung"
-                ),
-            )
-        ]
-        all_tools = self.query_engine_tools + [multiply_tool]
-
+        self.binance_api_key, self.binance_api_secret = binance_api_key, binance_api_secret
+        # multiply_tool = FunctionTool.from_defaults(fn=self.get_crypt_information, name="crypto_tool")
+        # self.query_engine = self.index.as_query_engine(similarity_top_k=2)
+        # self.query_engine_tools = [
+        #     QueryEngineTool(
+        #         query_engine=self.query_engine,
+        #         metadata=ToolMetadata(
+        #             name="duong_tri_dung_information",
+        #             description="Provide information about Duong Tri Dung"
+        #         ),
+        #     )
+        # ]
+        # all_tools = self.query_engine_tools + [multiply_tool]
+        all_tools = create_query_engine_tools(self.binance_api_key, self.binance_api_secret)
+        
         self.agent = OpenAIAgent.from_tools(all_tools, llm=self.llm, verbose=True)
         self.binance_api_key = binance_api_key
         self.binance_api_secret = binance_api_secret
 
-    def get_crypt_information(self):
-        """Get information about average price of BNBBTC pair"""
-        binance_client = Client(self.binance_api_key, self.binance_api_secret)
-        avg_price = binance_client.get_avg_price(symbol='BNBBTC')
-        return avg_price
+    # def get_crypt_information(self):
+    #     """Get information about average price of BNBBTC pair"""
+    #     binance_client = Client(self.binance_api_key, self.binance_api_secret)
+    #     avg_price = binance_client.get_avg_price(symbol='BNBBTC')
+    #     return avg_price
 
     def run(self):
         self.agent.chat_repl()
