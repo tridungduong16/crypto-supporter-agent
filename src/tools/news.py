@@ -85,17 +85,17 @@ class CryptoNewsAggregator:
         return formatted_news
 
 # Example usage:
-if __name__ == "__main__":
-    news_api_key = '26456f944dc64ec78e15de90347b30fa'
-    reddit_client_id = 'NRixDNGtv1YZ0LSOx6HdMQ'
-    reddit_client_secret = 'FUehXZGuowSFtJpP5cBQXzRGFCJwtg'
-    reddit_user_agent = 'your_reddit_user_agent_here'
-    aggregator = CryptoNewsAggregator(news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent)
-    keyword = input("Enter a keyword to search for crypto news: ")
-    aggregated_news = aggregator.aggregate_news('bitcoin')
-    for article in aggregated_news:
-        print(f"Title: {article['title']}")
-        print(f"Source: {article['source']}")
-        print(f"Description: {article['description']}")
-        print(f"URL: {article['url']}")
-        print("-" * 80)
+# if __name__ == "__main__":
+#     news_api_key = 'xx'
+#     reddit_client_id = 'xx'
+#     reddit_client_secret = 'xx'
+#     reddit_user_agent = 'your_reddit_user_agent_here'
+#     aggregator = CryptoNewsAggregator(news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent)
+#     keyword = input("Enter a keyword to search for crypto news: ")
+#     aggregated_news = aggregator.aggregate_news('bitcoin')
+#     for article in aggregated_news:
+#         print(f"Title: {article['title']}")
+#         print(f"Source: {article['source']}")
+#         print(f"Description: {article['description']}")
+#         print(f"URL: {article['url']}")
+#         print("-" * 80)

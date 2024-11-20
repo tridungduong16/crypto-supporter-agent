@@ -11,14 +11,13 @@ from src.tools.news import CryptoNewsAggregator
 
 
 
-def create_query_engine_tools(binance_api_key, binance_api_secret, news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent=''):
+def create_query_engine_tools(binance_api_key, binance_api_secret, news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent='hello'):
     pump_instance=CryptoPumpActivity(binance_api_key, binance_api_secret)
     # aggregator = CryptoNewsAggregator(news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent)
-
-    news_api_key = '26456f944dc64ec78e15de90347b30fa'
-    reddit_client_id = 'NRixDNGtv1YZ0LSOx6HdMQ'
-    reddit_client_secret = 'FUehXZGuowSFtJpP5cBQXzRGFCJwtg'
-    reddit_user_agent = 'your_reddit_user_agent_here'
+    # news_api_key = '26456f944dc64ec78e15de90347b30fa'
+    # reddit_client_id = 'NRixDNGtv1YZ0LSOx6HdMQ'
+    # reddit_client_secret = 'FUehXZGuowSFtJpP5cBQXzRGFCJwtg'
+    # reddit_user_agent = 'your_reddit_user_agent_here'
     aggregator = CryptoNewsAggregator(news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent)
     # aggregated_news = aggregator.aggregate_news('bitcoin')
     # print(aggregated_news)

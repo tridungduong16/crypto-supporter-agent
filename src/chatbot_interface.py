@@ -29,30 +29,30 @@ st.markdown(
     .stMarkdown>p {
         color: #ecf0f1;
     }
-    /* Center the chat container */
-    .chat-container {
-        max-height: 400px;
-        overflow-y: auto;
-        padding: 10px;
-        border-radius: 10px;
-        background-color: #1e1e1e;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        margin: 0 auto;  /* Center the container */
-    }
     .chat-message {
         margin-bottom: 15px;
         padding: 12px;
         border-radius: 15px;
     }
-    /* User message styling */
     .user-message {
-        background-color: #3f8f8f; /* Lighter background for user */
+        background-color: #3f8f8f;
         color: #fff;
     }
-    /* Chatbot message styling */
     .chatbot-message {
-        background-color: #2c3e50; /* Darker background for chatbot */
+        background-color: #2c3e50;
         color: #fff;
+    }
+    .bubble {
+        background-color: #3498db;
+        padding: 10px;
+        border-radius: 15px;
+        margin: 5px;
+        color: white;
+        cursor: pointer;
+        display: inline-block;
+    }
+    .bubble:hover {
+        background-color: #2980b9;
     }
     </style>
     """, unsafe_allow_html=True
@@ -92,6 +92,20 @@ def on_query_submit():
     else:
         st.error("Please enter a valid question!")
 
+# Display clickable bubbles
+def display_bubbles():
+    bubbles = [
+        ("average price BTCUSDT", "Retrieves the average price of BTCUSDT pair from Binance?"),
+        ("Top Volume in Binance", "What is the top  10 volume in Binance?"),
+        ("Greedy Index", "What is the current Fear and Greed Index for Bitcoin?"),
+        ("News about Solana", "Get news about Solana")
+    ]
+    
+    for bubble_text, query in bubbles:
+        # This will set the user input field when clicked
+        if st.button(bubble_text):
+            st.session_state.user_input = query  # Set the user input to the clicked bubble's query
+
 # Scrollable history
 history_length = len(st.session_state.history)
 if history_length > 0:
@@ -118,6 +132,9 @@ if history_length > 0:
 st.markdown("""
     <p style='text-align: center; font-size: 12px; color: #95A5A6;'>Made with ❤️ by Your Name</p>
     """, unsafe_allow_html=True)
+
+# Add the clickable bubbles
+display_bubbles()
 
 # Place the input box at the bottom of the page
 col1, col2, col3 = st.columns([1, 2, 1])

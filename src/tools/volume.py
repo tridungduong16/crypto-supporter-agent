@@ -104,7 +104,7 @@ def get_top_10_volume_crypto(binance_api_key, binance_api_secret):
 
 def get_price(binance_api_key, binance_api_secret, symbol):
     """
-    Retrieves the average price of the BNBBTC pair from Binance.
+    Retrieves the average price of the symbol pair from Binance.
     This function connects to the Binance API using the provided API key and secret,
     and fetches the average price for the BNBBTC trading pair.
     Args:
