@@ -25,7 +25,8 @@ class AIApplication:
                  data_path, 
                  model_name, 
                  binance_api_key, 
-                 binance_api_secret):
+                 binance_api_secret,
+                 system_prompt):
         self.llm = llm
         Settings.llm = self.llm
         self.qdrant_client = qdrant_client
@@ -55,7 +56,7 @@ class AIApplication:
         # all_tools = self.query_engine_tools + [multiply_tool]
         all_tools = create_query_engine_tools(self.binance_api_key, self.binance_api_secret)
         
-        self.agent = OpenAIAgent.from_tools(all_tools, llm=self.llm, verbose=True)
+        self.agent = OpenAIAgent.from_tools(all_tools, llm=self.llm, verbose=True, system_prompt=system_prompt)
         self.binance_api_key = binance_api_key
         self.binance_api_secret = binance_api_secret
 
@@ -82,6 +83,8 @@ if __name__ == "__main__":
     API_VERSION=os.getenv("API_VERSION")
     QDRANT_URL=os.getenv("QDRANT_URL")
     CRYPTO_COMPARE_API_KEY=os.getenv("CRYPTO_COMPARE_API_KEY")
+    SYSTEM_PROMPT=os.getenv("SYSTEM_PROMPT")
+
     llm = AzureOpenAI(
         engine="gpt40",
         temperature=0.0,
@@ -100,6 +103,7 @@ if __name__ == "__main__":
         data_path=DATA_PATH,
         model_name=MODEL_NAME,
         binance_api_key=BINANCE_API_KEY,
-        binance_api_secret=BINANCE_API_SECRET
+        binance_api_secret=BINANCE_API_SECRET,
+        system_prompt=SYSTEM_PROMPT
     )
     app.run()
