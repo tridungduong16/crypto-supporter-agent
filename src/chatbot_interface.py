@@ -3,6 +3,7 @@ import requests
 import time
 
 FASTAPI_URL = "http://127.0.0.1:8000/ask"  # Replace with your FastAPI server URL
+# FASTAPI_URL = "http://127.0.0.1:8000/ask_stream"  # Replace with your FastAPI server URL
 
 # Set up the page title, layout, and dark theme
 st.set_page_config(page_title="Crypto Market Analysis Chatbot", layout="wide")
@@ -76,13 +77,20 @@ def on_query_submit():
         with st.spinner("Processing your query..."):
             time.sleep(2)  # Simulate the processing time
 
-            # Send the user input to FastAPI for processing
-            response = requests.post(FASTAPI_URL, json={"query": user_input}, stream=True)
 
-            final_answer = ''
-            for token in response.iter_lines(decode_unicode=True):
-                if token:  # Only process non-empty tokens
-                    final_answer += token
+            response = requests.post(FASTAPI_URL, json={"query": user_input})
+            if response.status_code == 200:
+                final_answer = response.json().get("response", "Sorry, I couldn't understand your query.")
+            else:
+                final_answer = "Error: Unable to get a response from the API."
+            print(final_answer)
+
+            # Send the user input to FastAPI for processing
+            # response = requests.post(FASTAPI_URL, json={"query": user_input}, stream=True)
+            # final_answer = ''
+            # for token in response.iter_lines(decode_unicode=True):
+            #     final_answer += token
+            # print(final_answer)
 
             # Check if the response from FastAPI is successful
             # if response.status_code == 200:

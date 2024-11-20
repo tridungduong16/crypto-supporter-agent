@@ -110,7 +110,7 @@ ai_app = AIApplication(
     system_prompt=os.getenv("SYSTEM_PROMPT")
 )
 
-@app.post("/ask")
+@app.post("/ask_stream")
 async def ask_query(query_request: QueryRequest):
     query = query_request.query
     try:
@@ -118,6 +118,17 @@ async def ask_query(query_request: QueryRequest):
         return StreamingResponse(response, media_type="text/plain")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ask")
+async def ask_query(query_request: QueryRequest):
+    query = query_request.query
+    try:
+        response = await ai_app.chat(query)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
