@@ -6,6 +6,8 @@ FASTAPI_URL = "http://127.0.0.1:8000/ask"  # Replace with your FastAPI server UR
 
 # Set up the page title, layout, and dark theme
 st.set_page_config(page_title="Crypto Market Analysis Chatbot", layout="wide")
+
+# Custom CSS for styling the page
 st.markdown(
     """
     <style>
@@ -27,6 +29,31 @@ st.markdown(
     .stMarkdown>p {
         color: #ecf0f1;
     }
+    /* Center the chat container */
+    .chat-container {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #1e1e1e;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        margin: 0 auto;  /* Center the container */
+    }
+    .chat-message {
+        margin-bottom: 15px;
+        padding: 12px;
+        border-radius: 15px;
+    }
+    /* User message styling */
+    .user-message {
+        background-color: #3f8f8f; /* Lighter background for user */
+        color: #fff;
+    }
+    /* Chatbot message styling */
+    .chatbot-message {
+        background-color: #2c3e50; /* Darker background for chatbot */
+        color: #fff;
+    }
     </style>
     """, unsafe_allow_html=True
 )
@@ -42,11 +69,9 @@ st.markdown("<hr>", unsafe_allow_html=True)
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# User input box for chat
-user_input = st.text_input("Ask a question:", key="user_input", placeholder="e.g., What is the price of BTC?")
-
-# When the user presses the "Ask the Chatbot" button
-if st.button("Ask the Chatbot"):
+# Function to handle when user submits input by pressing "Enter"
+def on_query_submit():
+    user_input = st.session_state.user_input
     if user_input:
         with st.spinner("Processing your query..."):
             time.sleep(2)  # Simulate the processing time
@@ -70,26 +95,31 @@ if st.button("Ask the Chatbot"):
 # Scrollable history
 history_length = len(st.session_state.history)
 if history_length > 0:
-    # Display a slider to scroll through the history
-    history_index = st.slider("View Chat History", 0, history_length - 1, history_length - 1)
-    
-    # Display the entire chat history up to the selected index
-    for i in range(history_index + 1):
-        chat = st.session_state.history[i]
-        if chat["role"] == "user":
-            st.markdown(f"""
-                <div style="background-color:#D5F5E3; padding: 10px; border-radius: 10px; margin-top: 5px;">
-                    <strong style="color:#34495E;">User:</strong> {chat['message']}
-                </div>
-                """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-                <div style="background-color:#ECF0F1; padding: 10px; border-radius: 10px; margin-top: 5px;">
-                    <strong style="color:#34495E;">Chatbot:</strong> {chat['message']}
-                </div>
-                """, unsafe_allow_html=True)
+    # Create a column-based layout to center the chat container
+    col1, col2, col3 = st.columns([1, 2, 1])  # Adjust these values to change margins
 
-# Add footer
+    with col2:  # This is the center column
+        # Display the entire chat history
+        for chat in st.session_state.history:
+            if chat["role"] == "user":
+                st.markdown(f"""
+                    <div class="chat-message user-message">
+                        <strong>User:</strong> {chat['message']}
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                    <div class="chat-message chatbot-message">
+                        <strong>Chatbot:</strong> {chat['message']}
+                    </div>
+                    """, unsafe_allow_html=True)
+
+# Footer and the input box at the bottom (in a new container)
 st.markdown("""
     <p style='text-align: center; font-size: 12px; color: #95A5A6;'>Made with ❤️ by Your Name</p>
     """, unsafe_allow_html=True)
+
+# Place the input box at the bottom of the page
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.text_input("Ask a question:", key="user_input", placeholder="e.g., What is the price of BTC?", on_change=on_query_submit)
