@@ -94,13 +94,11 @@ def get_top_10_volume_crypto(binance_api_key, binance_api_secret):
     return top_10_pairs  # Return the list of top 10 pairs
 
 
-def get_crypto_information(binance_api_key, binance_api_secret):
+def get_price(binance_api_key, binance_api_secret, symbol):
     """
     Retrieves the average price of the BNBBTC pair from Binance.
-
     This function connects to the Binance API using the provided API key and secret,
     and fetches the average price for the BNBBTC trading pair.
-
     Args:
         binance_api_key (str): The API key for Binance account.
         binance_api_secret (str): The API secret for Binance account.
@@ -109,16 +107,51 @@ def get_crypto_information(binance_api_key, binance_api_secret):
         float: The average price of the BNBBTC pair.
     """
     binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
-    avg_price = binance_client.get_avg_price(symbol='BNBBTC')  # Get the average price for BNBBTC pair
+    avg_price = binance_client.get_avg_price(symbol=symbol)  # Get the average price for BNBBTC pair
     return avg_price  # Return the average price
 
 
-BINANCE_API_KEY=os.getenv("BINANCE_API_KEY")
-BINANCE_API_SECRET=os.getenv("BINANCE_API_SECRET")
-top_pair, volume = get_top_volume_crypto(BINANCE_API_KEY, BINANCE_API_SECRET)
-print(f"Top volume crypto pair: {top_pair} with volume: {volume}")
-top_10_pairs = get_top_10_volume_crypto(BINANCE_API_KEY, BINANCE_API_SECRET)
-print(f"Top volume crypto pair: {top_10_pairs}")
-# Example usage
-index, sentiment = get_fear_and_greed_index()
-print(f"Fear & Greed Index: {index}, Sentiment: {sentiment}")
+def get_top_k_volume_crypto(binance_api_key, binance_api_secret, topk=10):
+    """
+    Retrieves the top k cryptocurrency pairs with the highest 24-hour trading volumes
+    from Binance.
+
+    This function connects to the Binance API using the provided API key and secret,
+    fetches the trading data for all pairs, and sorts them by their trading volume in
+    descending order to get the top k pairs with the highest volume.
+
+    Args:
+        binance_api_key (str): The API key for Binance account.
+        binance_api_secret (str): The API secret for Binance account.
+
+    Returns:
+        list: A list of dictionaries containing the top 10 pairs and their respective volumes.
+    """
+    binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
+    tickers = binance_client.get_ticker()  # Get 24-hour price change statistics for all pairs
+    
+    # Sort the tickers by volume in descending order (highest volume first)
+    sorted_tickers = sorted(tickers, key=lambda x: float(x['volume']), reverse=True)
+    
+    top_10_pairs = []  # List to store the top 10 pairs and their volumes
+
+    # Add the top 10 pairs to the list
+    for i in range(topk):
+        top_10_pairs.append({
+            'symbol': sorted_tickers[i]['symbol'],  # Add pair symbol
+            'volume': sorted_tickers[i]['volume']   # Add the corresponding volume
+        })
+
+    return top_10_pairs  # Return the list of top 10 pairs
+
+
+
+# BINANCE_API_KEY=os.getenv("BINANCE_API_KEY")
+# BINANCE_API_SECRET=os.getenv("BINANCE_API_SECRET")
+# top_pair, volume = get_top_volume_crypto(BINANCE_API_KEY, BINANCE_API_SECRET)
+# print(f"Top volume crypto pair: {top_pair} with volume: {volume}")
+# top_10_pairs = get_top_10_volume_crypto(BINANCE_API_KEY, BINANCE_API_SECRET)
+# print(f"Top volume crypto pair: {top_10_pairs}")
+# # Example usage
+# index, sentiment = get_fear_and_greed_index()
+# print(f"Fear & Greed Index: {index}, Sentiment: {sentiment}")
