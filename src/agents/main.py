@@ -16,6 +16,7 @@ from src.agents.tools import create_query_engine_tools
 import asyncio
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
 
 # Load environment variables from .env file
 load_dotenv()
@@ -55,6 +56,23 @@ class AIApplication:
         response = await self.agent.achat(message)  # Assuming 'achat' is the async method
         return str(response)
 
+
+    async def stream_chat(self, message: str):
+        response = await self.agent.astream_chat(message)  # Assuming 'astream_chat' is the async method
+        response_text = ""
+        async for token in response.async_response_gen():  # Stream tokens as they arrive
+            response_text += token  # Append each token to the response text
+            yield token  # Yield each token as it arrives (this could be printed or processed)
+        # return response_text  # Optionally return the complete response after streaming
+
+    # async def stream_chat(self, message: str):
+    #     response = await self.agent.astream_chat(message)
+    #     response_gen = response.response_gen  # Extract the response generator
+    #     async response_text = ""
+    #     async for token in response.async_response_gen():
+    #         response_text += token  # Append each token to the response text
+    #         yield token  # Yield each token as it arrives (this could be printed or processed)
+    #     return response_text  # Optionally return the complete response after streaming
 
 # FastAPI Integration
 app = FastAPI()
@@ -96,13 +114,11 @@ ai_app = AIApplication(
 async def ask_query(query_request: QueryRequest):
     query = query_request.query
     try:
-        response = await ai_app.chat(query)
-        return {"response": response}
+        response = ai_app.stream_chat(query)  # Call the chat method (async)
+        return StreamingResponse(response, media_type="text/plain")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# Entry point for testing purposes
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

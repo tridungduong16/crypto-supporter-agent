@@ -77,17 +77,22 @@ def on_query_submit():
             time.sleep(2)  # Simulate the processing time
 
             # Send the user input to FastAPI for processing
-            response = requests.post(FASTAPI_URL, json={"query": user_input})
+            response = requests.post(FASTAPI_URL, json={"query": user_input}, stream=True)
+
+            final_answer = ''
+            for token in response.iter_lines(decode_unicode=True):
+                if token:  # Only process non-empty tokens
+                    final_answer += token
 
             # Check if the response from FastAPI is successful
-            if response.status_code == 200:
-                answer = response.json().get("response", "Sorry, I couldn't understand your query.")
-            else:
-                answer = "Error: Unable to get a response from the API."
+            # if response.status_code == 200:
+            #     answer = response.json().get("response", "Sorry, I couldn't understand your query.")
+            # else:
+            #     answer = "Error: Unable to get a response from the API."
 
             # Append the user input and chatbot response to the session state history
             st.session_state.history.append({"role": "user", "message": user_input})
-            st.session_state.history.append({"role": "chatbot", "message": answer})
+            st.session_state.history.append({"role": "chatbot", "message": final_answer})
 
     else:
         st.error("Please enter a valid question!")
