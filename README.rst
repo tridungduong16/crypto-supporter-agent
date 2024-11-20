@@ -21,7 +21,8 @@ Python Boilerplate contains all the boilerplate you need to create a Python pack
 docker-compose up -d
 
 http://localhost:4444/
-docker run -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent
+docker run -p 8501:8501 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.1
+streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501
 
 * Free software: MIT license
 * Documentation: https://ai.readthedocs.io.
