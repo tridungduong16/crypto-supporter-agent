@@ -6,6 +6,14 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from datetime import datetime
 from binance.client import Client
+from dotenv import load_dotenv
+import requests
+load_dotenv()
+import os
+
+import requests
+from binance.client import Client
+load_dotenv()
 
 class MarketTrendAnalysis:
     def __init__(self, binance_api_key, binance_api_secret):
@@ -117,8 +125,11 @@ class MarketTrendAnalysis:
 
 # Example usage
 if __name__ == "__main__":
-    binance_api_key = 'your_binance_api_key_here'
-    binance_api_secret = 'your_binance_api_secret_here'
+    binance_api_key=os.getenv("BINANCE_API_KEY")
+    binance_api_secret=os.getenv("BINANCE_API_SECRET")
+
+    # binance_api_key = 'your_binance_api_key_here'
+    # binance_api_secret = 'your_binance_api_secret_here'
 
     trend_analyzer = MarketTrendAnalysis(binance_api_key, binance_api_secret)
     symbol = 'BTCUSDT'  # Example symbol

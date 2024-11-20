@@ -1,6 +1,7 @@
 import requests
 import praw
 from datetime import datetime
+import pdb
 
 class CryptoNewsAggregator:
     def __init__(self, news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent):
@@ -63,6 +64,7 @@ class CryptoNewsAggregator:
         reddit_news = self.get_reddit_news(keyword)
         google_news = self.get_google_news(keyword)
 
+        # pdb.set_trace()
         # Combine both news sources
         all_news = reddit_news + google_news
 
@@ -78,30 +80,22 @@ class CryptoNewsAggregator:
                 'description': article.get('description', 'No description available'),
                 'source': article.get('source', 'Unknown source'),
                 'url': article['url'],
-                'published_at': article['published_at'],
+                # 'published_at': article['published_at'],
             })
         return formatted_news
 
 # Example usage:
 if __name__ == "__main__":
-    # Replace these values with your actual API keys and credentials
-    news_api_key = 'your_newsapi_key_here'
-    reddit_client_id = 'your_reddit_client_id_here'
-    reddit_client_secret = 'your_reddit_client_secret_here'
+    news_api_key = '26456f944dc64ec78e15de90347b30fa'
+    reddit_client_id = 'NRixDNGtv1YZ0LSOx6HdMQ'
+    reddit_client_secret = 'FUehXZGuowSFtJpP5cBQXzRGFCJwtg'
     reddit_user_agent = 'your_reddit_user_agent_here'
-
-    # Instantiate the CryptoNewsAggregator
     aggregator = CryptoNewsAggregator(news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent)
-
-    # Get the search keyword from user input
     keyword = input("Enter a keyword to search for crypto news: ")
-
-    # Get and display aggregated news based on the keyword
-    aggregated_news = aggregator.aggregate_news(keyword)
+    aggregated_news = aggregator.aggregate_news('bitcoin')
     for article in aggregated_news:
         print(f"Title: {article['title']}")
         print(f"Source: {article['source']}")
-        print(f"Published at: {article['published_at']}")
         print(f"Description: {article['description']}")
         print(f"URL: {article['url']}")
         print("-" * 80)

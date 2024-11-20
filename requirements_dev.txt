@@ -32,3 +32,4 @@ llama-index-embeddings-huggingface
 streamlit
 uvicorn
 fastapi
+matplotlib

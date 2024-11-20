@@ -32,6 +32,7 @@ RUN pip install -r requirements_dev.txt
 RUN pip install llama-index-vector-stores-qdrant
 RUN pip install llama-index-readers-file
 RUN pip install llama-index-llms-openai
+RUN python -m pip install TA-Lib
 
 EXPOSE 4444 4444
 

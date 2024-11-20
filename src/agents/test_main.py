@@ -50,10 +50,9 @@ class AIApplication:
         self.binance_api_key = binance_api_key
         self.binance_api_secret = binance_api_secret
 
-    async def chat(self, message: str):
+    def run(self):
         # Async method to interact with OpenAIAgent
-        response = await self.agent.achat(message)  # Assuming 'achat' is the async method
-        return str(response)
+        self.agent.chat_repl()
 
 
 # FastAPI Integration
@@ -92,17 +91,18 @@ ai_app = AIApplication(
     system_prompt=os.getenv("SYSTEM_PROMPT")
 )
 
-@app.post("/ask")
-async def ask_query(query_request: QueryRequest):
-    query = query_request.query
-    try:
-        response = await ai_app.chat(query)
-        return {"response": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+ai_app.run()
+# @app.post("/ask")
+# async def ask_query(query_request: QueryRequest):
+#     query = query_request.query
+#     try:
+#         response = await ai_app.chat(query)
+#         return {"response": response}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Entry point for testing purposes
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# # Entry point for testing purposes
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)

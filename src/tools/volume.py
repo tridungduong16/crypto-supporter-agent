@@ -3,9 +3,17 @@ import os
 from dotenv import load_dotenv
 import requests
 load_dotenv()
+import os
 
 import requests
 from binance.client import Client
+load_dotenv()
+
+binance_api_key=os.getenv("BINANCE_API_KEY")
+binance_api_secret=os.getenv("BINANCE_API_SECRET")
+print(f"XXXX: {binance_api_key}, {binance_api_secret}")
+# binance_api_key, binance_api_secret=
+binance_client = Client(binance_api_key, binance_api_secret)
 
 def get_fear_and_greed_index():
     """ 
@@ -45,7 +53,7 @@ def get_top_volume_crypto(binance_api_key, binance_api_secret):
     Returns:
         tuple: The symbol of the pair with the highest trading volume and its volume.
     """
-    binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
+    # binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
     tickers = binance_client.get_ticker()  # Get 24-hour price change statistics for all pairs
     top_volume_pair = None  # Variable to store the top volume pair
     top_volume = 0  # Variable to store the highest volume
@@ -148,9 +156,9 @@ def get_top_k_volume_crypto(binance_api_key, binance_api_secret, topk=10):
 
 # BINANCE_API_KEY=os.getenv("BINANCE_API_KEY")
 # BINANCE_API_SECRET=os.getenv("BINANCE_API_SECRET")
-# top_pair, volume = get_top_volume_crypto(BINANCE_API_KEY, BINANCE_API_SECRET)
+# top_pair, volume = get_top_volume_crypto()
 # print(f"Top volume crypto pair: {top_pair} with volume: {volume}")
-# top_10_pairs = get_top_10_volume_crypto(BINANCE_API_KEY, BINANCE_API_SECRET)
+# top_10_pairs = get_top_10_volume_crypto()
 # print(f"Top volume crypto pair: {top_10_pairs}")
 # # Example usage
 # index, sentiment = get_fear_and_greed_index()
