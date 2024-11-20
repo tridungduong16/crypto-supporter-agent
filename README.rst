@@ -22,7 +22,10 @@ docker-compose up -d
 
 http://localhost:4444/
 docker run -p 8501:8501 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.1
+docker run -p 8501:8501 -p 8000:8000 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.1
+
 streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501
+uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
 * Free software: MIT license
 * Documentation: https://ai.readthedocs.io.

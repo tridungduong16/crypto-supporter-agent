@@ -13,7 +13,9 @@ from llama_index.core import StorageContext
 from binance.client import Client
 from llama_index.core.tools import FunctionTool
 from src.agents.tools import create_query_engine_tools
-# from create_query_engine_tools
+import asyncio
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 # Load environment variables from .env file
 load_dotenv()
@@ -47,44 +49,56 @@ class AIApplication:
         self.binance_api_key = binance_api_key
         self.binance_api_secret = binance_api_secret
 
-    def run(self):
-        self.agent.chat_repl()
+    async def chat(self, message: str):
+        # Async method to interact with OpenAIAgent
+        response = await self.agent.achat(message)  # Assuming 'achat' is the async method
+        return str(response)
 
 
-# Entry point
+# FastAPI Integration
+app = FastAPI()
+
+# Pydantic model to accept input
+class QueryRequest(BaseModel):
+    query: str
+
+# Initialize the AIApplication with required parameters
+llm = AzureOpenAI(
+    engine="gpt40",
+    temperature=0.0,
+    azure_endpoint=os.getenv("AZURE_ENDPOINT"),
+    api_key=os.getenv("APIKEY_GPT4"),
+    api_version=os.getenv("API_VERSION")
+)
+
+qdrant_client = QdrantClient(
+    url=os.getenv("QDRANT_URL"),
+    api_key=os.getenv("API_KEY_QDRANT")
+)
+
+# Initialize the app instance
+ai_app = AIApplication(
+    llm=llm,
+    qdrant_client=qdrant_client,
+    collection_name=os.getenv("COLLECTION_NAME"),
+    data_path=os.getenv("DATA_PATH"),
+    model_name=os.getenv("MODEL_NAME"),
+    binance_api_key=os.getenv("BINANCE_API_KEY"),
+    binance_api_secret=os.getenv("BINANCE_API_SECRET"),
+    system_prompt=os.getenv("SYSTEM_PROMPT")
+)
+
+@app.post("/ask")
+async def ask_query(query_request: QueryRequest):
+    query = query_request.query
+    try:
+        response = await ai_app.chat(query)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Entry point for testing purposes
 if __name__ == "__main__":
-    BINANCE_API_KEY=os.getenv("BINANCE_API_KEY")
-    BINANCE_API_SECRET=os.getenv("BINANCE_API_SECRET")
-    APIKEY_GPT4=os.getenv("APIKEY_GPT4")
-    API_KEY_QDRANT=os.getenv("API_KEY_QDRANT")
-    COLLECTION_NAME=os.getenv("COLLECTION_NAME")
-    DATA_PATH=os.getenv("DATA_PATH")
-    MODEL_NAME=os.getenv("MODEL_NAME")
-    AZURE_ENDPOINT=os.getenv("AZURE_ENDPOINT")
-    API_VERSION=os.getenv("API_VERSION")
-    QDRANT_URL=os.getenv("QDRANT_URL")
-    CRYPTO_COMPARE_API_KEY=os.getenv("CRYPTO_COMPARE_API_KEY")
-    SYSTEM_PROMPT=os.getenv("SYSTEM_PROMPT")
-
-    llm = AzureOpenAI(
-        engine="gpt40",
-        temperature=0.0,
-        azure_endpoint=AZURE_ENDPOINT,
-        api_key=APIKEY_GPT4,
-        api_version=API_VERSION
-    )
-    qdrant_client = QdrantClient(
-        url=QDRANT_URL,
-        api_key=API_KEY_QDRANT
-    )
-    app = AIApplication(
-        llm=llm,
-        qdrant_client=qdrant_client,
-        collection_name=COLLECTION_NAME,
-        data_path=DATA_PATH,
-        model_name=MODEL_NAME,
-        binance_api_key=BINANCE_API_KEY,
-        binance_api_secret=BINANCE_API_SECRET,
-        system_prompt=SYSTEM_PROMPT
-    )
-    app.run()
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

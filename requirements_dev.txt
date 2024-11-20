@@ -30,3 +30,5 @@ cryptocompare
 python-binance
 llama-index-embeddings-huggingface
 streamlit
+uvicorn
+fastapi
