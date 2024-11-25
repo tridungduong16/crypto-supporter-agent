@@ -20,9 +20,8 @@ from fastapi.responses import StreamingResponse
 # from llama_index.agent.openai import ReActAgent, OpenAIAgent
 from llama_index.core.agent import AgentRunner, ReActAgentWorker, ReActAgent, ReActChatFormatter
 
-
 SYSTEM_PROMPT="""
-You are an AI assistant with funny style. 
+You have to answer the questions with funny style. 
 """
 
 # SYSTEM_HEADER="""
@@ -122,16 +121,19 @@ class AIApplication:
         self.index = VectorStoreIndex.from_documents(self.documents, storage_context=storage_context, embed_model=self.embed_model)
         self.binance_api_key, self.binance_api_secret = binance_api_key, binance_api_secret
         all_tools = create_query_engine_tools(self.binance_api_key, self.binance_api_secret, news_api_key, reddit_client_id, reddit_client_secret)
-        custom_formatter = ReActChatFormatter.from_context(context=SYSTEM_PROMPT)
+        # custom_formatter = ReActChatFormatter(context=SYSTEM_PROMPT)
         # custom_formatter = ReActChatFormatter(system_header=SYSTEM_HEADER)
-        self.agent = ReActAgent.from_tools(all_tools, llm=self.llm, verbose=True, react_chat_formatter=custom_formatter)
+        # self.agent = ReActAgentWorker.from_tools(all_tools, llm=self.llm, verbose=True, react_chat_formatter=custom_formatter)
+        # self.agent = ReActAgentWorker.from_tools(all_tools, llm=self.llm, verbose=True)
         # self.agent = OpenAIAgent.from_tools(all_tools, llm=self.llm, verbose=True, system_prompt=system_prompt)
+        self.agent = ReActAgent.from_tools(all_tools, llm=self.llm, verbose=True)
 
         self.binance_api_key = binance_api_key
         self.binance_api_secret = binance_api_secret
 
     async def chat(self, message: str):
         # Async method to interact with OpenAIAgent
+        print(message)
         response = await self.agent.achat(message)  # Assuming 'achat' is the async method
         return str(response)
 

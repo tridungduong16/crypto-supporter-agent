@@ -11,6 +11,7 @@ from src.tools.news import CryptoNewsAggregator
 from src.tools.pump import CryptoPumpActivity
 from src.tools.technical import MarketTrendAnalysis
 from src.tools.volume import CryptoData
+from src.online_retriever.telegram import get_latest_posts
 
 
 def create_query_engine_tools(
@@ -43,20 +44,30 @@ def create_query_engine_tools(
     get_volumes_for_symbols_tool = FunctionTool.from_defaults(
         fn=lambda symbol: volumer.get_volumes_for_symbols(symbol),
         name="get_volumes_for_symbols_tool",
+        description="A tool for getting volume for single symbol",
     )
 
     get_pump_activity_tool = FunctionTool.from_defaults(
         fn=lambda symbol: pump_instance.get_pump_activity(symbol),
         name="get_pump_activity",
+        description="A tool for tracking pump activity",
     )
 
     aggregate_news_tool = FunctionTool.from_defaults(
-        fn=lambda keyword: aggregator.aggregate_news(keyword), name="get_news_tool"
+        fn=lambda keyword: aggregator.aggregate_news(keyword), name="get_news_tool",
+        description="A tool for getting news from Google news and Reddit",
     )
 
     calculate_technical_indicators_tool = FunctionTool.from_defaults(
         fn=lambda keyword: analysis.calculate_technical_indicators(keyword),
         name="calculate_technical_indicators_tool",
+        description="A tool for calculate the technical indicators",
+    )
+
+    telegram_get_latest_posts_tool = FunctionTool.from_defaults(
+        fn=lambda channel_name: get_latest_posts(channel_name),
+        name="telegram_get_latest_posts_tool",
+        description="A tool for get news from telegram",
     )
 
     all_tools = [
@@ -67,6 +78,7 @@ def create_query_engine_tools(
         get_pump_activity_tool,
         aggregate_news_tool,
         calculate_technical_indicators_tool,
+        telegram_get_latest_posts_tool
     ]
 
     return all_tools

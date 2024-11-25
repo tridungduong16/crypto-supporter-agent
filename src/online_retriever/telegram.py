@@ -65,11 +65,11 @@ async def get_latest_posts(channel_name, topk=10):
         await client.disconnect()
 
 # Example usage
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    channel_name = '@FinancialStreetVN'
-    topk_posts = loop.run_until_complete(get_latest_posts(channel_name, topk=10))
-    if not topk_posts.empty:
-        print(topk_posts)
-    else:
-        print(f"No posts found or an error occurred for {channel_name}")
+# if __name__ == "__main__":
+#     loop = asyncio.get_event_loop()
+#     channel_name = '@FinancialStreetVN'
+#     topk_posts = loop.run_until_complete(get_latest_posts(channel_name, topk=10))
+#     if not topk_posts.empty:
+#         print(topk_posts)
+#     else:
+#         print(f"No posts found or an error occurred for {channel_name}")

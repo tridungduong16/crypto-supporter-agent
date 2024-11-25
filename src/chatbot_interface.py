@@ -1,149 +1,92 @@
 import streamlit as st
 import requests
-import time
 
+# FastAPI endpoint
 FASTAPI_URL = "http://127.0.0.1:8000/ask"  # Replace with your FastAPI server URL
-# FASTAPI_URL = "http://127.0.0.1:8000/ask_stream"  # Replace with your FastAPI server URL
 
-# Set up the page title, layout, and dark theme
-st.set_page_config(page_title="Crypto Market Analysis Chatbot", layout="wide")
+# Page configuration
+st.set_page_config(page_title="SatoshiSeal", layout="wide")
 
-# Custom CSS for styling the page
-st.markdown(
-    """
-    <style>
-    body {
-        background-color: #2c3e50;
-        color: #ecf0f1;
+# Sidebar for clickable links
+with st.sidebar:
+    st.header("Quick Options")
+    queries = {
+        "Top Volume": "Tell me the top volume trading pairs on Binance.",
+        "Greedy Index": "What is the current Fear and Greed Index?",
+        "Price Check": "What is the current price of Bitcoin or Ethereum?",
+        "Volume for Symbol": "Show me the trading volume for BTCUSDT.",
+        "Pump Activity": "Detect recent pump activity in the crypto market.",
+        "Aggregate News": "Fetch the latest news related to cryptocurrency.",
+        "Technical Indicators": "Calculate technical indicators for BTC, such as RSI or moving averages.",
+        "Telegram Posts": "What are the latest posts from Telegram channels about cryptocurrency?"
     }
-    .stTextInput>div>div>input {
-        background-color: #34495e;
-        color: #ecf0f1;
-    }
-    .stButton>button {
-        background-color: #3498db;
-        color: #ecf0f1;
-    }
-    .stTextInput>div>label {
-        color: #ecf0f1;
-    }
-    .stMarkdown>p {
-        color: #ecf0f1;
-    }
-    .chat-message {
-        margin-bottom: 15px;
-        padding: 12px;
-        border-radius: 15px;
-    }
-    .user-message {
-        background-color: #3f8f8f;
-        color: #fff;
-    }
-    .chatbot-message {
-        background-color: #2c3e50;
-        color: #fff;
-    }
-    .bubble {
-        background-color: #3498db;
-        padding: 10px;
-        border-radius: 15px;
-        margin: 5px;
-        color: white;
-        cursor: pointer;
-        display: inline-block;
-    }
-    .bubble:hover {
-        background-color: #2980b9;
-    }
-    </style>
-    """, unsafe_allow_html=True
-)
+
+    
+    # Process query immediately when a button is clicked
+    for label, query in queries.items():
+        if st.button(label):
+            if "messages" not in st.session_state:
+                st.session_state.messages = []
+            # Treat the button's query as real input
+            st.session_state.messages.append({"role": "user", "content": query})
+            st.session_state["process_query"] = query
 
 # Header
 st.markdown("""
-    <h1 style='text-align: center; color: #ecf0f1;'>Crypto Market Analysis Chatbot</h1>
-    <p style='text-align: center; font-size: 20px; color: #95A5A6;'>Ask about crypto trends, price predictions, and more!</p>
+    <h1 style='text-align: center;'>🤖 SatoshiSeal 🤖</h1>
+    <p style='text-align: center; font-size: 16px;'>Cryptocurrency advisor</p>
+    <hr>
     """, unsafe_allow_html=True)
-st.markdown("<hr>", unsafe_allow_html=True)
 
-# Initialize chat history in session state if not already
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-# Function to handle when user submits input by pressing "Enter"
-def on_query_submit():
-    user_input = st.session_state.user_input
-    if user_input:
-        with st.spinner("Processing your query..."):
-            st.markdown(
-                """
-                <style>
-                .stSpinner {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    z-index: 9999;
-                }
-                </style>
-                """, unsafe_allow_html=True
-            )
-            time.sleep(2)  # Simulate the processing time
-            response = requests.post(FASTAPI_URL, json={"query": user_input})
-            if response.status_code == 200:
-                final_answer = response.json().get("response", "Sorry, I couldn't understand your query.")
-            else:
-                final_answer = "Error: Unable to get a response from the API."
-            st.session_state.history.append({"role": "user", "message": user_input})
-            st.session_state.history.append({"role": "chatbot", "message": final_answer})
-    else:
-        st.error("Please enter a valid question!")
-
-# Display clickable bubbles
-def display_bubbles():
-    bubbles = [
-        ("average price BTCUSDT", "Retrieves the average price of BTCUSDT pair from Binance?"),
-        ("Top Volume in Binance", "What is the top  10 volume in Binance?"),
-        ("Greedy Index", "What is the current Fear and Greed Index for Bitcoin?"),
-        ("News about Solana", "Get news about Solana")
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "How can I help you?"}
     ]
-    
-    for bubble_text, query in bubbles:
-        # This will set the user input field when clicked
-        if st.button(bubble_text):
-            st.session_state.user_input = query  # Set the user input to the clicked bubble's query
 
-# Scrollable history
-history_length = len(st.session_state.history)
-if history_length > 0:
-    # Create a column-based layout to center the chat container
-    col1, col2, col3 = st.columns([1, 2, 1])  # Adjust these values to change margins
+# Display chat messages
+for msg in st.session_state.messages:
+    if msg["role"] == "user":
+        st.chat_message("user").write(msg["content"])
+    elif msg["role"] == "assistant":
+        st.chat_message("assistant").write(msg["content"])
 
-    with col2:  # This is the center column
-        # Display the entire chat history
-        for chat in st.session_state.history:
-            if chat["role"] == "user":
-                st.markdown(f"""
-                    <div class="chat-message user-message">
-                        <strong>User:</strong> {chat['message']}
-                    </div>
-                    """, unsafe_allow_html=True)
+# Check if there is a query to process
+if "process_query" in st.session_state:
+    query_to_process = st.session_state["process_query"]
+    del st.session_state["process_query"]
+
+    # Display the query immediately as the user's message
+    st.chat_message("user").write(query_to_process)
+
+    # Process the query via FastAPI
+    with st.spinner("Thinking..."):
+        try:
+            response = requests.post(FASTAPI_URL, json={"query": query_to_process})
+            if response.status_code == 200:
+                answer = response.json().get("response", "Sorry, I couldn't understand your query.")
             else:
-                st.markdown(f"""
-                    <div class="chat-message chatbot-message">
-                        <strong>Chatbot:</strong> {chat['message']}
-                    </div>
-                    """, unsafe_allow_html=True)
+                answer = "Error: Unable to get a response from the API."
+        except Exception as e:
+            answer = f"Error: {str(e)}"
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.chat_message("assistant").write(answer)
 
-# Footer and the input box at the bottom (in a new container)
-st.markdown("""
-    <p style='text-align: center; font-size: 12px; color: #95A5A6;'>Made with ❤️ by Your Name</p>
-    """, unsafe_allow_html=True)
+# Input box for user query
+if prompt := st.chat_input(placeholder="Your message"):
+    # Append user query to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
 
-# Add the clickable bubbles
-display_bubbles()
-
-# Place the input box at the bottom of the page
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.text_input("Ask a question:", key="user_input", placeholder="e.g., What is the price of BTC?", on_change=on_query_submit)
+    # Process the query via FastAPI
+    with st.spinner("Thinking..."):
+        try:
+            response = requests.post(FASTAPI_URL, json={"query": prompt})
+            if response.status_code == 200:
+                answer = response.json().get("response", "Sorry, I couldn't understand your query.")
+            else:
+                answer = "Error: Unable to get a response from the API."
+        except Exception as e:
+            answer = f"Error: {str(e)}"
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.chat_message("assistant").write(answer)
