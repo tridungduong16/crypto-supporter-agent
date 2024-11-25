@@ -36,7 +36,6 @@ channels = [
 
 # Create the client
 client = TelegramClient(username, api_id, api_hash)
-
 async def get_channel_posts():
     await client.start(phone=phone_number)
     # DataFrame to store all posts

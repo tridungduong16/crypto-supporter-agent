@@ -1,165 +1,260 @@
-from binance.client import Client
 import os
+
+import requests
+from binance.client import Client
 from dotenv import load_dotenv
-import requests
-load_dotenv()
-import os
 
-import requests
-from binance.client import Client
+# Load environment variables
 load_dotenv()
 
-binance_api_key=os.getenv("BINANCE_API_KEY")
-binance_api_secret=os.getenv("BINANCE_API_SECRET")
-print(f"XXXX: {binance_api_key}, {binance_api_secret}")
-# binance_api_key, binance_api_secret=
-binance_client = Client(binance_api_key, binance_api_secret)
 
-def get_fear_and_greed_index():
-    """ 
-    Fetches the Crypto Fear & Greed Index from the Alternative.me API.
-    
-    This function makes a GET request to the Alternative.me API to retrieve the current
-    Fear & Greed Index for the crypto market. It returns the index value and its sentiment
-    classification (e.g., Extreme Fear, Fear, Neutral, Greed, or Extreme Greed).
-    
-    Returns:
-        tuple: A tuple containing the Fear & Greed Index value and sentiment classification.
-               If the request fails, it returns (None, "Error fetching data").
-    """
-    url = "https://api.alternative.me/fng/"
-    response = requests.get(url)  # Sending GET request to the API endpoint
-    if response.status_code == 200:  # Check if the request was successful (HTTP 200 OK)
-        data = response.json()  # Parse the response JSON into a Python dictionary
-        index = data['data'][0]['value']  # Extract the Fear & Greed Index value
-        sentiment = data['data'][0]['value_classification']  # Extract the sentiment classification
-        return index, sentiment  # Return the index and sentiment classification
-    else:
-        return None, "Error fetching data"  # Return error message if the request fails
+class CryptoData:
+    def __init__(self, binance_api_key, binance_api_secret):
+        # self.binance_api_key = binance_api_key
+        # self.binance_api_secret = binance_api_secret
+        self.binance_client = Client(binance_api_key, binance_api_secret)
+
+    def get_fear_and_greed_index(self):
+        """
+        Fetches the Crypto Fear & Greed Index from the Alternative.me API.
+        """
+        url = "https://api.alternative.me/fng/"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            index = data["data"][0]["value"]
+            sentiment = data["data"][0]["value_classification"]
+            return index, sentiment
+        return None, "Error fetching data"
+
+    def get_bitcoin_dominance(self):
+        """
+        Fetches the Bitcoin dominance percentage from the CoinGecko API.
+        """
+        url = "https://api.coingecko.com/api/v3/global"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            dominance = data["data"]["market_cap_percentage"]["btc"]
+            return dominance
+        return None
+
+    def get_total_market_cap(self):
+        """
+        Fetches the total cryptocurrency market capitalization from CoinGecko API.
+        """
+        url = "https://api.coingecko.com/api/v3/global"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return data["data"]["total_market_cap"]["usd"]
+        return None
+
+    def get_top_10_cryptos_by_market_cap(self):
+        """
+        Fetches the top 10 cryptocurrencies by market capitalization from CoinGecko API.
+        """
+        url = "https://api.coingecko.com/api/v3/coins/markets"
+        params = {
+            "vs_currency": "usd",
+            "order": "market_cap_desc",
+            "per_page": 10,
+            "page": 1,
+        }
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            return [
+                {
+                    "name": coin["name"],
+                    "symbol": coin["symbol"],
+                    "market_cap": coin["market_cap"],
+                }
+                for coin in data
+            ]
+        return []
+
+    def get_top_volume_crypto(self):
+        """
+        Retrieves the crypto pair with the highest 24-hour trading volume from Binance.
+        """
+        tickers = self.binance_client.get_ticker()
+        top_volume_pair = max(tickers, key=lambda x: float(x["volume"]))
+        return top_volume_pair["symbol"], float(top_volume_pair["volume"])
+
+    def get_top_10_volume_crypto(self):
+        """
+        Retrieves the top 10 cryptocurrency pairs with the highest 24-hour trading volumes from Binance.
+        """
+        tickers = self.binance_client.get_ticker()
+        sorted_tickers = sorted(tickers, key=lambda x: float(x["volume"]), reverse=True)
+        return [
+            {"symbol": ticker["symbol"], "volume": float(ticker["volume"])}
+            for ticker in sorted_tickers[:10]
+        ]
+
+    def get_price(self, symbol):
+        """
+        Retrieves the average price of the given trading pair from Binance.
+        """
+        avg_price = self.binance_client.get_avg_price(symbol=symbol)
+        return avg_price
+
+    def get_single_symbol_volume(self, symbol):
+        """
+        Retrieves the 24-hour trading volume for a single cryptocurrency pair from Binance.
+        """
+        try:
+            ticker = self.binance_client.get_ticker(symbol=symbol)
+            return {"symbol": ticker["symbol"], "volume": float(ticker["volume"])}
+        except Exception as e:
+            return {"error": str(e)}
+
+    def get_highest_volume_symbol(self):
+        """
+        Retrieves the cryptocurrency pair with the highest 24-hour trading volume from Binance.
+        """
+        tickers = self.binance_client.get_ticker()
+        highest_volume = max(tickers, key=lambda x: float(x["volume"]))
+        return {
+            "symbol": highest_volume["symbol"],
+            "volume": float(highest_volume["volume"]),
+        }
+
+    def get_lowest_volume_symbol(self):
+        """
+        Retrieves the cryptocurrency pair with the lowest 24-hour trading volume from Binance.
+        """
+        tickers = self.binance_client.get_ticker()
+        lowest_volume = min(tickers, key=lambda x: float(x["volume"]))
+        return {
+            "symbol": lowest_volume["symbol"],
+            "volume": float(lowest_volume["volume"]),
+        }
+
+    def get_total_market_volume(self):
+        """
+        Calculates the total 24-hour trading volume across all cryptocurrency pairs from Binance.
+        """
+        tickers = self.binance_client.get_ticker()
+        total_volume = sum(float(ticker["volume"]) for ticker in tickers)
+        return total_volume
+
+    def get_top_n_volume_contributors(self, n=10):
+        """
+        Retrieves the top N cryptocurrency pairs contributing the most to the total market volume from Binance.
+        """
+        tickers = self.binance_client.get_ticker()
+        sorted_tickers = sorted(tickers, key=lambda x: float(x["volume"]), reverse=True)
+        return [
+            {"symbol": ticker["symbol"], "volume": float(ticker["volume"])}
+            for ticker in sorted_tickers[:n]
+        ]
+
+    def get_volumes_for_symbols(self, symbols):
+        """
+        Retrieves 24-hour trading volumes for a list of cryptocurrency pairs from Binance.
+        """
+        tickers = self.binance_client.get_ticker()
+        volume_data = []
+        for symbol in symbols:
+            symbol_ticker = next(
+                (ticker for ticker in tickers if ticker["symbol"] == symbol), None
+            )
+            if symbol_ticker:
+                volume_data.append(
+                    {
+                        "symbol": symbol_ticker["symbol"],
+                        "volume": float(symbol_ticker["volume"]),
+                    }
+                )
+            else:
+                volume_data.append({"symbol": symbol, "error": "Not found"})
+        return volume_data
+
+    def get_top_k_volume_crypto(self, topk=10):
+        """
+        Retrieves the top k cryptocurrency pairs with the highest 24-hour trading volumes
+        from Binance.
+
+        This function connects to the Binance API using the provided API key and secret,
+        fetches the trading data for all pairs, and sorts them by their trading volume in
+        descending order to get the top k pairs with the highest volume.
+
+        Args:
+            binance_api_key (str): The API key for Binance account.
+            binance_api_secret (str): The API secret for Binance account.
+
+        Returns:
+            list: A list of dictionaries containing the top 10 pairs and their respective volumes.
+        """
+        tickers = (
+            self.binance_client.get_ticker()
+        )  # Get 24-hour price change statistics for all pairs
+        sorted_tickers = sorted(tickers, key=lambda x: float(x["volume"]), reverse=True)
+        top_10_pairs = []  # List to store the top 10 pairs and their volumes
+        for i in range(topk):
+            top_10_pairs.append(
+                {
+                    "symbol": sorted_tickers[i]["symbol"],  # Add pair symbol
+                    "volume": sorted_tickers[i][
+                        "volume"
+                    ],  # Add the corresponding volume
+                }
+            )
+        return top_10_pairs
+
+    def get_top_k_usdt_volume_crypto(self, topk=10):
+        """
+        Retrieves the top k cryptocurrency pairs with the highest 24-hour trading volumes
+        in USDT from Binance.
+
+        This function connects to the Binance API using the provided client,
+        fetches the trading data for all pairs, filters pairs that are traded against USDT,
+        and calculates the volume in USDT by multiplying the token volume by its last price.
+
+        Args:
+            topk (int): The number of top pairs to retrieve (default is 10).
+
+        Returns:
+            list: A list of dictionaries containing the top k USDT pairs and their respective USDT volumes.
+        """
+        # Get 24-hour price change statistics for all pairs
+        tickers = self.binance_client.get_ticker()
+
+        # Filter for pairs traded against USDT
+        usdt_tickers = [
+            ticker for ticker in tickers if ticker["symbol"].endswith("USDT")
+        ]
+
+        # Calculate the volume in USDT and add it to each ticker
+        for ticker in usdt_tickers:
+            ticker["usdt_volume"] = float(ticker["volume"]) * float(ticker["lastPrice"])
+
+        # Sort the USDT pairs by the calculated USDT volume in descending order
+        sorted_usdt_tickers = sorted(
+            usdt_tickers, key=lambda x: float(x["usdt_volume"]), reverse=True
+        )
+
+        # Get the top k pairs
+        top_usdt_pairs = []
+        for i in range(min(topk, len(sorted_usdt_tickers))):
+            top_usdt_pairs.append(
+                {
+                    "symbol": sorted_usdt_tickers[i]["symbol"],  # Add pair symbol
+                    "usdt_volume": sorted_usdt_tickers[i][
+                        "usdt_volume"
+                    ],  # Add the calculated USDT volume
+                }
+            )
+
+        return top_usdt_pairs
 
 
-def get_top_volume_crypto(binance_api_key, binance_api_secret):
-    """
-    Retrieves the crypto pair with the highest 24-hour trading volume from Binance.
-
-    This function connects to the Binance API using the provided API key and secret,
-    fetches the trading data for all available pairs, and identifies the pair with the
-    highest 24-hour trading volume.
-
-    Args:
-        binance_api_key (str): The API key for Binance account.
-        binance_api_secret (str): The API secret for Binance account.
-
-    Returns:
-        tuple: The symbol of the pair with the highest trading volume and its volume.
-    """
-    # binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
-    tickers = binance_client.get_ticker()  # Get 24-hour price change statistics for all pairs
-    top_volume_pair = None  # Variable to store the top volume pair
-    top_volume = 0  # Variable to store the highest volume
-
-    # Iterate through each ticker to find the pair with the highest volume
-    for ticker in tickers:
-        volume = float(ticker['volume'])  # Convert the volume to float
-        if volume > top_volume:  # If the current pair's volume is higher than the stored one
-            top_volume = volume  # Update the top volume
-            top_volume_pair = ticker['symbol']  # Update the top volume pair
-
-    return top_volume_pair, top_volume  # Return the pair with the highest volume and the volume
-
-
-def get_top_10_volume_crypto(binance_api_key, binance_api_secret):
-    """
-    Retrieves the top 10 cryptocurrency pairs with the highest 24-hour trading volumes
-    from Binance.
-
-    This function connects to the Binance API using the provided API key and secret,
-    fetches the trading data for all pairs, and sorts them by their trading volume in
-    descending order to get the top 10 pairs with the highest volume.
-
-    Args:
-        binance_api_key (str): The API key for Binance account.
-        binance_api_secret (str): The API secret for Binance account.
-
-    Returns:
-        list: A list of dictionaries containing the top 10 pairs and their respective volumes.
-    """
-    binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
-    tickers = binance_client.get_ticker()  # Get 24-hour price change statistics for all pairs
-    
-    # Sort the tickers by volume in descending order (highest volume first)
-    sorted_tickers = sorted(tickers, key=lambda x: float(x['volume']), reverse=True)
-    
-    top_10_pairs = []  # List to store the top 10 pairs and their volumes
-
-    # Add the top 10 pairs to the list
-    for i in range(10):
-        top_10_pairs.append({
-            'symbol': sorted_tickers[i]['symbol'],  # Add pair symbol
-            'volume': sorted_tickers[i]['volume']   # Add the corresponding volume
-        })
-
-    return top_10_pairs  # Return the list of top 10 pairs
-
-
-def get_price(binance_api_key, binance_api_secret, symbol):
-    """
-    Retrieves the average price of the symbol pair from Binance.
-    This function connects to the Binance API using the provided API key and secret,
-    and fetches the average price for the BNBBTC trading pair.
-    Args:
-        binance_api_key (str): The API key for Binance account.
-        binance_api_secret (str): The API secret for Binance account.
-
-    Returns:
-        float: The average price of the BNBBTC pair.
-    """
-    binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
-    avg_price = binance_client.get_avg_price(symbol=symbol)  # Get the average price for BNBBTC pair
-    return avg_price  # Return the average price
-
-
-def get_top_k_volume_crypto(binance_api_key, binance_api_secret, topk=10):
-    """
-    Retrieves the top k cryptocurrency pairs with the highest 24-hour trading volumes
-    from Binance.
-
-    This function connects to the Binance API using the provided API key and secret,
-    fetches the trading data for all pairs, and sorts them by their trading volume in
-    descending order to get the top k pairs with the highest volume.
-
-    Args:
-        binance_api_key (str): The API key for Binance account.
-        binance_api_secret (str): The API secret for Binance account.
-
-    Returns:
-        list: A list of dictionaries containing the top 10 pairs and their respective volumes.
-    """
-    binance_client = Client(binance_api_key, binance_api_secret)  # Initialize the Binance client
-    tickers = binance_client.get_ticker()  # Get 24-hour price change statistics for all pairs
-    
-    # Sort the tickers by volume in descending order (highest volume first)
-    sorted_tickers = sorted(tickers, key=lambda x: float(x['volume']), reverse=True)
-    
-    top_10_pairs = []  # List to store the top 10 pairs and their volumes
-
-    # Add the top 10 pairs to the list
-    for i in range(topk):
-        top_10_pairs.append({
-            'symbol': sorted_tickers[i]['symbol'],  # Add pair symbol
-            'volume': sorted_tickers[i]['volume']   # Add the corresponding volume
-        })
-
-    return top_10_pairs  # Return the list of top 10 pairs
-
-
-
-# BINANCE_API_KEY=os.getenv("BINANCE_API_KEY")
-# BINANCE_API_SECRET=os.getenv("BINANCE_API_SECRET")
-# top_pair, volume = get_top_volume_crypto()
-# print(f"Top volume crypto pair: {top_pair} with volume: {volume}")
-# top_10_pairs = get_top_10_volume_crypto()
-# print(f"Top volume crypto pair: {top_10_pairs}")
-# # Example usage
-# index, sentiment = get_fear_and_greed_index()
-# print(f"Fear & Greed Index: {index}, Sentiment: {sentiment}")
+# Example usage:
+# crypto_data = CryptoData()
+# print(crypto_data.get_fear_and_greed_index())
+# print(crypto_data.get_bitcoin_dominance())
+# print(crypto_data.get_total_market_cap())
+# print(crypto_data.get_top_10_volume_crypto())
+# print(crypto_data.get_single_symbol_volume("BTCUSDT"))
