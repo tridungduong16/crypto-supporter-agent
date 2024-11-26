@@ -29,7 +29,8 @@ python-coinmarketcap
 cryptocompare
 python-binance
 llama-index-embeddings-huggingface
-streamlit==1.40.1
+# streamlit==1.40.1
 uvicorn
 fastapi
 matplotlib
+telethon
