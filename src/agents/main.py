@@ -114,11 +114,11 @@ class AIApplication:
             collection_name=self.collection_name, 
             vectors_config=VectorParams(size=384, distance=Distance.COSINE)
         )
-        self.vector_store = QdrantVectorStore(client=self.qdrant_client, collection_name=self.collection_name)
+        # self.vector_store = QdrantVectorStore(client=self.qdrant_client, collection_name=self.collection_name)
         self.documents = SimpleDirectoryReader(data_path).load_data()
         self.embed_model = HuggingFaceEmbedding(model_name=model_name)
-        storage_context = StorageContext.from_defaults(vector_store=self.vector_store)
-        self.index = VectorStoreIndex.from_documents(self.documents, storage_context=storage_context, embed_model=self.embed_model)
+        # storage_context = StorageContext.from_defaults(vector_store=self.vector_store)
+        # self.index = VectorStoreIndex.from_documents(self.documents, storage_context=storage_context, embed_model=self.embed_model)
         self.binance_api_key, self.binance_api_secret = binance_api_key, binance_api_secret
         all_tools = create_query_engine_tools(self.binance_api_key, self.binance_api_secret, news_api_key, reddit_client_id, reddit_client_secret)
         # custom_formatter = ReActChatFormatter(context=SYSTEM_PROMPT)
