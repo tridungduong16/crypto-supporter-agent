@@ -20,6 +20,7 @@ Python Boilerplate contains all the boilerplate you need to create a Python pack
 
 docker-compose up -d
 docker build -t crypto-agent:1.1.2 .
+git remote set-url origin https://<YOUR_USERNAME>@github.com/<YOUR_USERNAME>/<REPO_NAME>.git
 
 http://localhost:4444/
 docker run -p 8501:8501 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.2
