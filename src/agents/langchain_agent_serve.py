@@ -149,7 +149,8 @@ class CryptoSupporterAgent:
             self.analysis.calculate_technical_indicators,
             self.search_tool,
             self.volumer.get_volumes_for_symbols,
-            self.volumer.get_volumes_for_symbols,
+            self.volumer.get_top_k_usdt_volume_crypto,
+            self.volumer.get_fear_and_greed_index,
             self.retriever_tool 
         ]
 
@@ -219,10 +220,25 @@ class CryptoSupporterAgent:
         return last_ai_message_content
 
 
+    def print_stream(self, stream):
+        last_ai_message_content = ""
+        for s in stream:
+            message = s["messages"][-1]
+            if isinstance(message, tuple):
+                print(message)
+            else:
+                message.pretty_print()
+
+            for message in s.get("messages", []):
+                if isinstance(message, AIMessage):
+                    last_ai_message_content = message.content  # Update with the latest AIMessage content
+        return last_ai_message_content
+    
     def process_message(self, message: str):
         """Process a single user message through the graph."""
         response = self.react_graph.stream(
             {"messages": [("user", message)]}, self.config, stream_mode="values"
         )
-        messages=self.get_last_ai_message_content(response)
+        # self.print_stream(response)
+        messages=self.print_stream(response)
         return messages

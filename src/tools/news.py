@@ -27,7 +27,7 @@ class CryptoNewsAggregator:
         
         # Fetch the top posts in the 'CryptoCurrency' subreddit
         subreddit = reddit.subreddit('CryptoCurrency')
-        top_posts = subreddit.search(keyword, limit=10)
+        top_posts = subreddit.search(keyword, limit=100)
 
         news = []
         for post in top_posts:
@@ -35,7 +35,8 @@ class CryptoNewsAggregator:
                 'title': post.title,
                 'description': post.selftext,  # The content of the post
                 'url': post.url,
-                'created_at': datetime.utcfromtimestamp(post.created_utc).strftime('%Y-%m-%d %H:%M:%S')
+                'source': 'Reddit',
+                'published_at': datetime.utcfromtimestamp(post.created_utc).strftime('%Y-%m-%d %H:%M:%S')
             })
         return news
 
@@ -52,6 +53,7 @@ class CryptoNewsAggregator:
                     'title': article['title'],
                     'description': article['description'],
                     'url': article['url'],
+                    'source': 'Google News',
                     'published_at': article['publishedAt']
                 })
             return news
@@ -80,7 +82,7 @@ class CryptoNewsAggregator:
                 'description': article.get('description', 'No description available'),
                 'source': article.get('source', 'Unknown source'),
                 'url': article['url'],
-                # 'published_at': article['published_at'],
+                'published_at': article['published_at'],
             })
         return formatted_news
 

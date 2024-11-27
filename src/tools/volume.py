@@ -14,9 +14,19 @@ class CryptoData:
         # self.binance_api_secret = binance_api_secret
         self.binance_client = Client(binance_api_key, binance_api_secret)
 
-    def get_fear_and_greed_index(self):
+    def get_fear_and_greed_index(self) -> tuple[str, str]:
         """
         Fetches the Crypto Fear & Greed Index from the Alternative.me API.
+
+        The index provides a numerical representation of the market's sentiment
+        on a scale from 0 to 100, where lower values represent fear and higher values 
+        represent greed. The sentiment classification is also returned as a string.
+
+        Returns:
+            tuple[str, str]: A tuple containing:
+                - index (str): The numerical value of the Fear & Greed Index.
+                - sentiment (str): The sentiment classification (e.g., "Fear" or "Greed").
+                If an error occurs, it returns (None, "Error fetching data").
         """
         url = "https://api.alternative.me/fng/"
         response = requests.get(url)
@@ -174,18 +184,14 @@ class CryptoData:
 
     def get_top_k_volume_crypto(self, topk=10):
         """
-        Retrieves the topk cryptocurrency pairs with the highest 24-hour trading volumes
-        from Binance.
-
-        This function connects to the Binance API using the provided API key and secret,
-        fetches the trading data for all pairs, and sorts them by their trading volume in
-        descending order to get the top k pairs with the highest volume.
+        Retrieves the top k cryptocurrency pairs with the highest 24-hour trading volumes
+        in USDT from Binance.
 
         Args:
-            topk: the number of crypto currencies having highest volume
+            topk (int): The number of top pairs to retrieve (default is 10).
 
         Returns:
-            list: A list of dictionaries containing the top 10 pairs and their respective volumes.
+            list: A list of dictionaries containing the top k USDT pairs and their respective USDT volumes.
         """
         tickers = (
             self.binance_client.get_ticker()
@@ -203,20 +209,11 @@ class CryptoData:
             )
         return top_10_pairs
 
-    def get_top_k_usdt_volume_crypto(self, topk=10):
-        """
-        Retrieves the top k cryptocurrency pairs with the highest 24-hour trading volumes
-        in USDT from Binance.
-
-        This function connects to the Binance API using the provided client,
-        fetches the trading data for all pairs, filters pairs that are traded against USDT,
-        and calculates the volume in USDT by multiplying the token volume by its last price.
+    def get_top_k_usdt_volume_crypto(self, topk: int = 10) -> list:
+        """Gets top trading volume in binance
 
         Args:
-            topk (int): The number of top pairs to retrieve (default is 10).
-
-        Returns:
-            list: A list of dictionaries containing the top k USDT pairs and their respective USDT volumes.
+            topk: top trading pair with highest trading volume 
         """
         # Get 24-hour price change statistics for all pairs
         tickers = self.binance_client.get_ticker()
