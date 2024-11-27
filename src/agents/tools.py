@@ -13,6 +13,7 @@ from src.tools.technical import MarketTrendAnalysis
 from src.tools.volume import CryptoData
 from src.online_retriever.telegram import get_latest_posts
 from src.tools.bitcoin_predict import BitcoinPredictor
+from src.db.index import QdrantHandler
 
 def create_query_engine_tools(
     binance_api_key,

@@ -14,11 +14,18 @@ from langchain_openai.llms.azure import AzureOpenAI
 from langchain_openai import AzureChatOpenAI
 from src.tools.news import CryptoNewsAggregator
 from src.tools.technical import MarketTrendAnalysis
-
+from langchain_core.messages.ai import AIMessage 
+import pdb
+from src.tools.volume import CryptoData
+from src.db.retriever import QdrantRetriever
+from langchain.tools.retriever import create_retriever_tool
+from src.db.index import QdrantHandler
+from src.db.retriever import QdrantRetriever
 class CryptoSupporterAgent:
     def __init__(self):
         # Initialize memory for persistent state tracking
         self.memory = MemorySaver()
+        
 
         # Load environment variables
         load_dotenv()
@@ -60,13 +67,27 @@ class CryptoSupporterAgent:
             self.binance_api_secret,
         )
 
+        self.volumer = CryptoData(self.binance_api_key, self.binance_api_secret,)
+        vectorstore=QdrantHandler()
+        self.retriever_tool = vectorstore.retriever_tool
+        # self.retriever_tool = create_retriever_tool(
+        #     retriever,
+        #     "retrieve_blog_posts",
+        #     "Search and return information Duong Tri Dung",
+        # )
+
         self.search_tool = DuckDuckGoSearchRun()
 
         self.tools = [
             self.aggregator.aggregate_news,
             self.analysis.calculate_technical_indicators,
             self.search_tool,
+            self.volumer.get_volumes_for_symbols,
+            # self.volumer.get_volumes_for_symbols,
+            self.retriever_tool 
         ]
+
+
 
     def _initialize_model(self):
         """Initialize the AI model and bind tools."""
@@ -88,6 +109,7 @@ class CryptoSupporterAgent:
         to complete each subtask.
         """
         self.sys_msg = SystemMessage(content=self.system_prompt)
+        self.config = {"configurable": {"thread_id": "1"}}
 
     def _initialize_graph(self):
         """Build and compile the state graph with memory."""
@@ -95,6 +117,7 @@ class CryptoSupporterAgent:
 
         # Add nodes
         self.builder.add_node("reasoner", self._reasoner)
+        self.builder.add_node("retrieve_qdrant", ToolNode([self.retriever_tool]))
         self.builder.add_node("tools", ToolNode(self.tools))
 
         # Add edges
@@ -110,21 +133,29 @@ class CryptoSupporterAgent:
         """Reasoner function that processes messages."""
         return {"messages": [self.llm_with_tools.invoke([self.sys_msg] + state["messages"])]}
 
+    def get_last_ai_message_content(self, response):
+        """
+        Extracts the content of the last AIMessage from a generator of response events.
+
+        Args:
+            response (generator): A generator containing response events.
+
+        Returns:
+            str: Content of the last AIMessage or an empty string if not found.
+        """
+        last_ai_message_content = ""
+        for event in response:
+            # Iterate through the messages in the event
+            for message in event.get("messages", []):
+                if isinstance(message, AIMessage):
+                    last_ai_message_content = message.content  # Update with the latest AIMessage content
+        return last_ai_message_content
+
+
     def process_message(self, message: str):
         """Process a single user message through the graph."""
-        config = {"configurable": {"thread_id": "1"}}
         response = self.react_graph.stream(
-            {"messages": [("user", message)]}, config, stream_mode="values"
+            {"messages": [("user", message)]}, self.config, stream_mode="values"
         )
-        for event in response:
-            event["messages"][-1].pretty_print()
-
-
-# if __name__ == "__main__":
-#     agent = CryptoSupporterAgent()
-#     initial_message = "Get technical analysis for BTC"
-#     agent.process_message(initial_message)
-#     initial_message = "How about news for it?"
-#     agent.process_message(initial_message)
-#     initial_message = "Search for information about Solana"
-#     agent.process_message(initial_message)
+        messages=self.get_last_ai_message_content(response)
+        return messages

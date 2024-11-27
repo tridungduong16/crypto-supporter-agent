@@ -14,7 +14,7 @@ from langchain_openai.llms.azure import AzureOpenAI
 from langchain_openai import AzureChatOpenAI
 from src.tools.news import CryptoNewsAggregator
 from src.tools.technical import MarketTrendAnalysis
-
+from langchain_core.messages.ai import AIMessage 
 class CryptoSupporterAgent:
     def __init__(self):
         # Initialize memory for persistent state tracking
@@ -110,21 +110,42 @@ class CryptoSupporterAgent:
         """Reasoner function that processes messages."""
         return {"messages": [self.llm_with_tools.invoke([self.sys_msg] + state["messages"])]}
 
+
+    def get_last_ai_message_content(self, response):
+        """
+        Extracts the content of the last AIMessage from a generator of response events.
+
+        Args:
+            response (generator): A generator containing response events.
+
+        Returns:
+            str: Content of the last AIMessage or an empty string if not found.
+        """
+        last_ai_message_content = ""
+        for event in response:
+            # Iterate through the messages in the event
+            for message in event.get("messages", []):
+                if isinstance(message, AIMessage):
+                    last_ai_message_content = message.content  # Update with the latest AIMessage content
+        return last_ai_message_content
+
+
     def process_message(self, message: str):
         """Process a single user message through the graph."""
         config = {"configurable": {"thread_id": "1"}}
         response = self.react_graph.stream(
             {"messages": [("user", message)]}, config, stream_mode="values"
         )
-        for event in response:
-            event["messages"][-1].pretty_print()
+        messages=self.get_last_ai_message_content(response)
+        pdb.set_trace()
+        return messages
 
 
-# if __name__ == "__main__":
-#     agent = CryptoSupporterAgent()
-#     initial_message = "Get technical analysis for BTC"
-#     agent.process_message(initial_message)
-#     initial_message = "How about news for it?"
-#     agent.process_message(initial_message)
-#     initial_message = "Search for information about Solana"
-#     agent.process_message(initial_message)
+if __name__ == "__main__":
+    agent = CryptoSupporterAgent()
+    initial_message = "Get technical analysis for BTC"
+    res = agent.process_message(initial_message)
+    initial_message = "How about news for it?"
+    res = agent.process_message(initial_message)
+    initial_message = "Search for information about Solana"
+    res = agent.process_message(initial_message)

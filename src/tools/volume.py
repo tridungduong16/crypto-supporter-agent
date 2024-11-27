@@ -174,7 +174,7 @@ class CryptoData:
 
     def get_top_k_volume_crypto(self, topk=10):
         """
-        Retrieves the top k cryptocurrency pairs with the highest 24-hour trading volumes
+        Retrieves the topk cryptocurrency pairs with the highest 24-hour trading volumes
         from Binance.
 
         This function connects to the Binance API using the provided API key and secret,
@@ -182,8 +182,7 @@ class CryptoData:
         descending order to get the top k pairs with the highest volume.
 
         Args:
-            binance_api_key (str): The API key for Binance account.
-            binance_api_secret (str): The API secret for Binance account.
+            topk: the number of crypto currencies having highest volume
 
         Returns:
             list: A list of dictionaries containing the top 10 pairs and their respective volumes.

@@ -34,3 +34,5 @@ uvicorn
 fastapi
 matplotlib
 telethon
+langchain-huggingface
+langchain-qdrant

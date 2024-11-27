@@ -27,20 +27,23 @@ async def process_message(request: MessageRequest):
     """
     Endpoint to process a message through the CryptoSupporterAgent.
     """
-    try:
-        # Process the user message
-        agent_response = []
-        config = {"configurable": {"thread_id": "1"}}
-        response_stream = agent.react_graph.stream(
-            {"messages": [("user", request.message)]}, config, stream_mode="values"
-        )
+    agent_response = agent.process_message(request.message)
+    return MessageResponse(response=agent_response)
+
+    # try:
+    #     # Process the user message
+    #     agent_response = []
+    #     config = {"configurable": {"thread_id": "1"}}
+    #     response_stream = agent.react_graph.stream(
+    #         {"messages": [("user", request.message)]}, config, stream_mode="values"
+    #     )
         
-        for event in response_stream:
-            last_message = event["messages"][-1].content
-            agent_response.append(last_message)
-        return MessageResponse(response=" ".join(agent_response))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    #     for event in response_stream:
+    #         last_message = event["messages"][-1].content
+    #         agent_response.append(last_message)
+    #     return MessageResponse(response=" ".join(agent_response))
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
