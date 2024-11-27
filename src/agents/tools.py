@@ -29,7 +29,7 @@ def create_query_engine_tools(
     )
     analysis = MarketTrendAnalysis(binance_api_key, binance_api_secret)
     volumer = CryptoData(binance_api_key, binance_api_secret)
-
+    
     bitcoin_predictor=BitcoinPredictor(binance_api_key, binance_api_secret, fed_data_path)
 
 
