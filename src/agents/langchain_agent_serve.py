@@ -17,10 +17,26 @@ from src.tools.technical import MarketTrendAnalysis
 from langchain_core.messages.ai import AIMessage 
 import pdb
 from src.tools.volume import CryptoData
-from src.db.retriever import QdrantRetriever
-from langchain.tools.retriever import create_retriever_tool
 from src.db.index import QdrantHandler
-from src.db.retriever import QdrantRetriever
+from langchain_core.documents import Document
+from langchain.tools.retriever import create_retriever_tool
+from langchain_huggingface import HuggingFaceEmbeddings
+from uuid import uuid4
+from langchain_qdrant import QdrantVectorStore
+from langchain.tools.retriever import create_retriever_tool
+from langchain_core.documents import Document
+
+import os
+from dotenv import load_dotenv
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_qdrant import QdrantVectorStore
+from langchain.tools.retriever import create_retriever_tool
+from langchain_core.documents import Document
+from PyPDF2 import PdfReader
+from uuid import uuid4
+
 class CryptoSupporterAgent:
     def __init__(self):
         # Initialize memory for persistent state tracking
@@ -52,6 +68,9 @@ class CryptoSupporterAgent:
         self.AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT")
         self.API_VERSION = os.getenv("API_VERSION")
         self.OPENAI_ENGINE = os.getenv("OPENAI_ENGINE")
+        self.embedding_model_name = os.getenv(
+            "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+        )
 
     def _initialize_tools(self):
         """Initialize tools and their dependencies."""
@@ -68,22 +87,69 @@ class CryptoSupporterAgent:
         )
 
         self.volumer = CryptoData(self.binance_api_key, self.binance_api_secret,)
-        vectorstore=QdrantHandler()
-        self.retriever_tool = vectorstore.retriever_tool
-        # self.retriever_tool = create_retriever_tool(
-        #     retriever,
-        #     "retrieve_blog_posts",
-        #     "Search and return information Duong Tri Dung",
+        qdrant_handler=QdrantHandler()
+
+        model_kwargs = {"device": "cpu", "trust_remote_code": True}
+
+        embeddings = HuggingFaceEmbeddings(
+                    model_name=self.embedding_model_name, model_kwargs=model_kwargs
+                )
+
+
+
+        # qdrant = QdrantVectorStore.from_existing_collection(
+        #     embedding=embeddings,
+        #     collection_name=os.getenv("COLLECTION_NAME", "default_collection"),
+        #     url="http://localhost:6333",
         # )
 
-        self.search_tool = DuckDuckGoSearchRun()
+        DOCUMENTS = [
+            Document(page_content="Duong Tri Dung\nPhone number: (+61) 411948899", metadata={"source": "tweet"}),
+            Document(page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.", metadata={"source": "news"}),
+            Document(page_content="Building an exciting new project with LangChain - come check it out!", metadata={"source": "tweet"}),
+            # Document(page_content="Robbers broke into the city bank and stole $1 million in cash.", metadata={"source": "news"}),
+            # Document(page_content="Wow! That was an amazing movie. I can't wait to see it again.", metadata={"source": "tweet"}),
+            # Document(page_content="Is the new iPhone worth the price? Read this review to find out.", metadata={"source": "website"}),
+            # Document(page_content="The top 10 soccer players in the world right now.", metadata={"source": "website"}),
+            # Document(page_content="LangGraph is the best framework for building stateful, agentic applications!", metadata={"source": "tweet"}),
+            # Document(page_content="The stock market is down 500 points today due to fears of a recession.", metadata={"source": "news"}),
+            # Document(page_content="I have a bad feeling I am going to get deleted :(", metadata={"source": "tweet"}),
+        ]
+        # qdrant_handler.index_documents(DOCUMENTS)
+        qdrant_vector_store = QdrantVectorStore.from_documents(
+            DOCUMENTS,
+            embeddings,
+            url=os.getenv("QDRANT_URL"),
+            prefer_grpc=True,
+            api_key=os.getenv("API_KEY_QDRANT"),
+            collection_name=os.getenv("COLLECTION_NAME", "default_collection"),
+        )
+        retriever = qdrant_vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 1})
 
+
+        # print("XXXXXXX")
+        # res = (retriever.invoke("Duong Tri Dung"))
+        # print(res)
+        # print("XXXXXXX")
+        # pdb.set_trace()retriever.invoke("Stealing from the bank is a crime")
+
+
+
+        # retriever = qdrant_handler.vector_store
+        self.retriever_tool = create_retriever_tool(
+            retriever,
+            name="retriever",
+            description = "Retrieve information about Duong Tri Dung",
+        )
+
+        # self.retriever_tool = qdrant_handler.retriever_tool
+        self.search_tool = DuckDuckGoSearchRun()
         self.tools = [
             self.aggregator.aggregate_news,
             self.analysis.calculate_technical_indicators,
             self.search_tool,
             self.volumer.get_volumes_for_symbols,
-            # self.volumer.get_volumes_for_symbols,
+            self.volumer.get_volumes_for_symbols,
             self.retriever_tool 
         ]
 
@@ -117,13 +183,14 @@ class CryptoSupporterAgent:
 
         # Add nodes
         self.builder.add_node("reasoner", self._reasoner)
-        self.builder.add_node("retrieve_qdrant", ToolNode([self.retriever_tool]))
+        # self.builder.add_node("retrieve_qdrant", ToolNode([self.retriever_tool]))
         self.builder.add_node("tools", ToolNode(self.tools))
 
         # Add edges
         self.builder.add_edge(START, "reasoner")
         self.builder.add_conditional_edges("reasoner", tools_condition)
         self.builder.add_edge("tools", "reasoner")
+        # self.builder.add_edge("retrieve_qdrant", "reasoner")  # Add edge for retriever node
         self.builder.add_edge("reasoner", END)  # Mark the end of the process
 
         # Compile the graph with memory integration
