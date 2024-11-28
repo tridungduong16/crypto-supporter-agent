@@ -88,7 +88,7 @@ class CryptoSupporterAgent:
         )
 
         self.volumer = CryptoData(self.binance_api_key, self.binance_api_secret,)
-        qdrant_handler=QdrantHandler()
+        # qdrant_handler=QdrantHandler()
 
         model_kwargs = {"device": "cpu", "trust_remote_code": True}
 
@@ -104,38 +104,38 @@ class CryptoSupporterAgent:
         #     url="http://localhost:6333",
         # )
 
-        # DOCUMENTS = [
-        #     Document(page_content="Duong Tri Dung\nPhone number: (+61) 411948899", metadata={"source": "tweet"}),
-        #     Document(page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.", metadata={"source": "news"}),
-        #     Document(page_content="Building an exciting new project with LangChain - come check it out!", metadata={"source": "tweet"}),
-        #     # Document(page_content="Robbers broke into the city bank and stole $1 million in cash.", metadata={"source": "news"}),
-        #     # Document(page_content="Wow! That was an amazing movie. I can't wait to see it again.", metadata={"source": "tweet"}),
-        #     # Document(page_content="Is the new iPhone worth the price? Read this review to find out.", metadata={"source": "website"}),
-        #     # Document(page_content="The top 10 soccer players in the world right now.", metadata={"source": "website"}),
-        #     # Document(page_content="LangGraph is the best framework for building stateful, agentic applications!", metadata={"source": "tweet"}),
-        #     # Document(page_content="The stock market is down 500 points today due to fears of a recession.", metadata={"source": "news"}),
-        #     # Document(page_content="I have a bad feeling I am going to get deleted :(", metadata={"source": "tweet"}),
-        # ]
-
-        news_data = pd.read_csv("dataset/aggregated_news.csv")
-        print(len(news_data))
-
-        news_data = news_data.iloc[:5, :]
-
-        # Convert each row to a Document object
         documents = [
-            Document(
-                page_content=(
-                    f"{row.get('title', 'No title available')}\n"
-                    f"{row.get('description', 'No description available')}\n"
-                    f"Source: {row.get('source', 'Unknown source')}\n"
-                    f"URL: {row.get('url', 'No URL available')}"
-                ),
-                metadata={"keyword": row.get("keyword", "Unknown keyword")}
-            )
-            for _, row in tqdm(news_data.iterrows(), total=news_data.shape[0])
+            Document(page_content="Duong Tri Dung\nPhone number: (+61) 411948899", metadata={"source": "tweet"}),
+            Document(page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.", metadata={"source": "news"}),
+            Document(page_content="Building an exciting new project with LangChain - come check it out!", metadata={"source": "tweet"}),
+            # Document(page_content="Robbers broke into the city bank and stole $1 million in cash.", metadata={"source": "news"}),
+            # Document(page_content="Wow! That was an amazing movie. I can't wait to see it again.", metadata={"source": "tweet"}),
+            # Document(page_content="Is the new iPhone worth the price? Read this review to find out.", metadata={"source": "website"}),
+            # Document(page_content="The top 10 soccer players in the world right now.", metadata={"source": "website"}),
+            # Document(page_content="LangGraph is the best framework for building stateful, agentic applications!", metadata={"source": "tweet"}),
+            # Document(page_content="The stock market is down 500 points today due to fears of a recession.", metadata={"source": "news"}),
+            # Document(page_content="I have a bad feeling I am going to get deleted :(", metadata={"source": "tweet"}),
         ]
-        print(len(documents))
+
+        # news_data = pd.read_csv("dataset/aggregated_news.csv")
+        # print(len(news_data))
+
+        # news_data = news_data.iloc[:5, :]
+
+        # # Convert each row to a Document object
+        # documents = [
+        #     Document(
+        #         page_content=(
+        #             f"{row.get('title', 'No title available')}\n"
+        #             f"{row.get('description', 'No description available')}\n"
+        #             f"Source: {row.get('source', 'Unknown source')}\n"
+        #             f"URL: {row.get('url', 'No URL available')}"
+        #         ),
+        #         metadata={"keyword": row.get("keyword", "Unknown keyword")}
+        #     )
+        #     for _, row in tqdm(news_data.iterrows(), total=news_data.shape[0])
+        # ]
+        # print(len(documents))
 
         qdrant_vector_store = QdrantVectorStore.from_documents(
             documents,
@@ -160,7 +160,7 @@ class CryptoSupporterAgent:
         self.retriever_tool = create_retriever_tool(
             retriever,
             name="retriever",
-            description = "Retrieve latest news about cryptocurrency, crypto symbol from Google and Reddits",
+            description = "Retrieve information about duong tri dung",
         )
 
         # self.retriever_tool = qdrant_handler.retriever_tool

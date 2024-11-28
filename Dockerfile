@@ -46,7 +46,8 @@ RUN pip install -r requirements_dev.txt
 RUN pip install llama-index-vector-stores-qdrant
 RUN pip install llama-index-readers-file
 RUN pip install llama-index-llms-openai
-
+RUN pip install streamlit
 EXPOSE 4444 4444
 
-CMD ["tail", "-f", "/dev/null"]
+CMD ["uvicorn", "src.agents.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
