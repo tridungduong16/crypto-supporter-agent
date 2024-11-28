@@ -37,6 +37,15 @@ from langchain.tools.retriever import create_retriever_tool
 from langchain_core.documents import Document
 from PyPDF2 import PdfReader
 from uuid import uuid4
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+from langchain_core.tools import BaseTool, tool
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.prebuilt import ToolNode, tools_condition
 
 
 class CryptoSupporterAgent:
@@ -161,11 +170,32 @@ class CryptoSupporterAgent:
         self.sys_msg = SystemMessage(content=self.system_prompt)
         self.config = {"configurable": {"thread_id": "1"}}
 
+
+    def plot_chart(self, state: MessagesState) -> None:
+        tool_message: ToolMessage = state["messages"][-1]
+        table = tool_message.artifact
+        x_axis, y_axis = table.index, table['close']
+        plt.figure(figsize=(10, 5))
+        plt.plot(x_axis, y_axis, marker="o")
+        plt.title("Price History")
+        plt.xlabel("Date")
+        plt.ylabel("Price")
+        plt.grid(True)
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        # plt.show()
+        path = "123.png"
+        plt.savefig(path)
+        plt.close()
+        print(f"Your chart is saved as {path}")
+
+
     def _initialize_graph(self):
         """Build and compile the state graph with memory."""
         self.builder = StateGraph(MessagesState)
 
         self.builder.add_node("reasoner", self._reasoner)
+        self.builder.add_node("plot", self.plot_chart)
 
         self.builder.add_node("tools", ToolNode(self.tools))
 
