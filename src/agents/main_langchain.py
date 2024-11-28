@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from src.agents.langchain_agent_serve import CryptoSupporterAgent
+from src.agents.agents import CryptoSupporterAgent
 
 # Initialize FastAPI app
 app = FastAPI()
