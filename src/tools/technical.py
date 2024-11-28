@@ -83,25 +83,25 @@ class MarketTrendAnalysis:
         plt.tight_layout()
         plt.show()
 
-    def get_moving_average(self, df, window=50):
-        """Get the moving average for a given window."""
-        df_with_indicators = self.calculate_technical_indicators(df)
-        return df_with_indicators[f'MA50'].iloc[-1]  # Return the last value of the moving average
+    # def get_moving_average(self, df, window=50):
+    #     """Get the moving average for a given window."""
+    #     df_with_indicators = self.calculate_technical_indicators(df)
+    #     return df_with_indicators[f'MA50'].iloc[-1]  # Return the last value of the moving average
 
-    def get_rsi(self, df):
-        """Get the RSI for a given symbol."""
-        df_with_indicators = self.calculate_technical_indicators(df)
-        return df_with_indicators['RSI'].iloc[-1]
+    # def get_rsi(self, df):
+    #     """Get the RSI for a given symbol."""
+    #     df_with_indicators = self.calculate_technical_indicators(df)
+    #     return df_with_indicators['RSI'].iloc[-1]
 
-    def get_macd(self, df):
-        """Get the MACD for a given symbol."""
-        df_with_indicators = self.calculate_technical_indicators(df)
-        return df_with_indicators['MACD'].iloc[-1]
+    # def get_macd(self, df):
+    #     """Get the MACD for a given symbol."""
+    #     df_with_indicators = self.calculate_technical_indicators(df)
+    #     return df_with_indicators['MACD'].iloc[-1]
 
-    def get_support_resistance(self, df):
-        """Get the support and resistance levels for a given cryptocurrency symbol."""
-        df_with_indicators = self.calculate_technical_indicators(df)
-        return {'support': df_with_indicators['bb_bbl'].iloc[-1], 'resistance': df_with_indicators['bb_bbh'].iloc[-1]}
+    # def get_support_resistance(self, df):
+    #     """Get the support and resistance levels for a given cryptocurrency symbol."""
+    #     df_with_indicators = self.calculate_technical_indicators(df)
+    #     return {'support': df_with_indicators['bb_bbl'].iloc[-1], 'resistance': df_with_indicators['bb_bbh'].iloc[-1]}
 
     def get_price_prediction(self, df):
         """Predict the price for the next day using a trained machine learning model."""
@@ -120,19 +120,6 @@ class MarketTrendAnalysis:
         predicted_price = model.predict(latest_data)[0]
         return predicted_price
 
-    # def get_technical_analysis_information(self, symbol):
-    #     df = self.get_historical_data(symbol)
-    #     ma50 = self.get_moving_average(df, window=50)
-    #     print(f"50-Day Moving Average for {symbol}: {ma50:.2f}")
-    #     rsi = self.get_rsi(df)
-    #     print(f"RSI for {symbol}: {rsi:.2f}")
-    #     macd = self.get_macd(df)
-    #     print(f"MACD for {symbol}: {macd:.2f}")
-    #     support_resistance = self.get_support_resistance(df)
-    #     print(f"Support level: {support_resistance['support']:.2f}, Resistance level: {support_resistance['resistance']:.2f}")
-    #     predicted_price = self.get_price_prediction(df)
-    #     print(f"Predicted price for {symbol} tomorrow: {predicted_price:.2f}")
-
 
 # Example usage
 if __name__ == "__main__":
@@ -146,22 +133,22 @@ if __name__ == "__main__":
     df = trend_analyzer.get_historical_data(symbol)
 
     # Get Moving Average (MA50) for BTC
-    ma50 = trend_analyzer.get_moving_average(df, window=50)
-    print(f"50-Day Moving Average for {symbol}: {ma50:.2f}")
+    # ma50 = trend_analyzer.get_moving_average(df, window=50)
+    # print(f"50-Day Moving Average for {symbol}: {ma50:.2f}")
 
-    # Get RSI for BTC
-    rsi = trend_analyzer.get_rsi(df)
-    print(f"RSI for {symbol}: {rsi:.2f}")
+    # # Get RSI for BTC
+    # rsi = trend_analyzer.get_rsi(df)
+    # print(f"RSI for {symbol}: {rsi:.2f}")
 
-    # Get MACD for BTC
-    macd = trend_analyzer.get_macd(df)
-    print(f"MACD for {symbol}: {macd:.2f}")
+    # # Get MACD for BTC
+    # macd = trend_analyzer.get_macd(df)
+    # print(f"MACD for {symbol}: {macd:.2f}")
 
-    # Get Support and Resistance for BTC
-    support_resistance = trend_analyzer.get_support_resistance(df)
-    print(f"Support level: {support_resistance['support']:.2f}, Resistance level: {support_resistance['resistance']:.2f}")
+    # # Get Support and Resistance for BTC
+    # support_resistance = trend_analyzer.get_support_resistance(df)
+    # print(f"Support level: {support_resistance['support']:.2f}, Resistance level: {support_resistance['resistance']:.2f}")
 
-    # Get Price Prediction for BTC
-    predicted_price = trend_analyzer.get_price_prediction(df)
-    print(f"Predicted price for {symbol} tomorrow: {predicted_price:.2f}")
+    # # Get Price Prediction for BTC
+    # predicted_price = trend_analyzer.get_price_prediction(df)
+    # print(f"Predicted price for {symbol} tomorrow: {predicted_price:.2f}")
 
