@@ -50,37 +50,47 @@ class MarketTrendAnalysis:
         df['MACD'] = MACD(df['close'], window_slow=26, window_fast=12, window_sign=9).macd()
         return df
 
-    def plot_technical_indicators(self, df):
-        """Plot the closing price along with technical indicators."""
-        plt.figure(figsize=(14, 10))
+    def plot_technical_indicators(self, df, output_file='technical_indicators.png'):
+        """
+        Plot the closing price along with technical indicators and export the graph as a PNG file.
+
+        Args:
+            df (DataFrame): DataFrame containing crypto data with technical indicators.
+            output_file (str): The filename for the exported PNG file.
+        """
+        plt.figure(figsize=(14, 8))
 
         # Check if Bollinger Bands are present in the DataFrame
         print("Columns in DataFrame:", df.columns)
 
         # Plot Closing Price and Bollinger Bands
-        plt.subplot(3, 1, 1)
-        plt.plot(df['close'], label='Close Price')
-        plt.plot(df['bb_bbm'], label='Bollinger Band Middle', linestyle='--')
-        plt.plot(df['bb_bbh'], label='Bollinger Band High', linestyle='--')
-        plt.plot(df['bb_bbl'], label='Bollinger Band Low', linestyle='--')
-        plt.title('Crypto Price and Bollinger Bands')
-        plt.legend()
+        plt.plot(df['close'], label='Close Price', color='black', linewidth=1.5)
+        if 'bb_bbm' in df.columns and 'bb_bbh' in df.columns and 'bb_bbl' in df.columns:
+            plt.plot(df['bb_bbm'], label='Bollinger Band Middle', linestyle='--', color='blue')
+            plt.plot(df['bb_bbh'], label='Bollinger Band High', linestyle='--', color='green')
+            plt.plot(df['bb_bbl'], label='Bollinger Band Low', linestyle='--', color='red')
 
-        # Plot RSI
-        plt.subplot(3, 1, 2)
-        plt.plot(df['RSI'], label='RSI', color='orange')
-        plt.axhline(70, color='red', linestyle='--')
-        plt.axhline(30, color='green', linestyle='--')
-        plt.title('Relative Strength Index (RSI)')
-        plt.legend()
+        # Add RSI (on a secondary y-axis)
+        if 'RSI' in df.columns:
+            plt.plot(df['RSI'], label='RSI', color='orange', linestyle=':', linewidth=1.5)
+            plt.axhline(70, color='red', linestyle='--', linewidth=0.8)
+            plt.axhline(30, color='green', linestyle='--', linewidth=0.8)
 
-        # Plot MACD
-        plt.subplot(3, 1, 3)
-        plt.plot(df['MACD'], label='MACD', color='blue')
-        plt.title('Moving Average Convergence Divergence (MACD)')
-        plt.legend()
+        # Add MACD
+        if 'MACD' in df.columns:
+            plt.plot(df['MACD'], label='MACD', color='purple', linestyle='-.', linewidth=1.5)
 
-        plt.tight_layout()
+        plt.title('Crypto Price and Technical Indicators')
+        plt.xlabel('Time')
+        plt.ylabel('Price and Indicators')
+        plt.legend()
+        plt.grid(alpha=0.3)
+
+        # Export to PNG
+        plt.savefig(output_file, dpi=300, bbox_inches='tight')
+        print(f"Plot exported as {output_file}")
+
+        # Show plot
         plt.show()
 
     # def get_moving_average(self, df, window=50):
