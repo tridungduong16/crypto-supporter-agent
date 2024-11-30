@@ -14,7 +14,7 @@ from langchain_openai.llms.azure import AzureOpenAI
 from langchain_openai import AzureChatOpenAI
 from src.tools.news import CryptoNewsAggregator
 from src.tools.technical import MarketTrendAnalysis
-from langchain_core.messages.ai import AIMessage 
+from langchain_core.messages.ai import AIMessage
 import pdb
 from src.tools.volume import CryptoData
 from src.db.index import QdrantHandler
@@ -26,7 +26,7 @@ from langchain_qdrant import QdrantVectorStore
 from langchain.tools.retriever import create_retriever_tool
 from langchain_core.documents import Document
 import pandas as pd
-from tqdm import tqdm 
+from tqdm import tqdm
 import os
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
@@ -37,20 +37,27 @@ from langchain.tools.retriever import create_retriever_tool
 from langchain_core.documents import Document
 from PyPDF2 import PdfReader
 from uuid import uuid4
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+from langchain_core.tools import BaseTool, tool
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, START, MessagesState, StateGraph
+from langgraph.prebuilt import ToolNode, tools_condition
+
 
 class CryptoSupporterAgent:
     def __init__(self):
-        # Initialize memory for persistent state tracking
-        self.memory = MemorySaver()
-        
 
-        # Load environment variables
+        self.memory = MemorySaver()
+
         load_dotenv()
 
-        # Initialize configuration and components
         self._load_environment_variables()
-        self._initialize_tools()
         self._initialize_model()
+        self._initialize_tools()
         self._initialize_graph()
 
     def _load_environment_variables(self):
@@ -74,7 +81,44 @@ class CryptoSupporterAgent:
         )
 
     def _initialize_tools(self):
-        """Initialize tools and their dependencies."""
+        retriever = self.qdrant_vector_store.as_retriever(
+            search_type="mmr", search_kwargs={"k": 10}
+        )
+
+        self.retriever_tool = create_retriever_tool(
+            retriever,
+            name="retriever",
+            description="Retrieve information about duong tri dung",
+        )
+
+        self.search_tool = DuckDuckGoSearchRun()
+        self.tools = [
+            self.aggregator.aggregate_news,
+            self.analysis.calculate_technical_indicators,
+            self.search_tool,
+            self.volumer.get_volumes_for_symbols,
+            self.volumer.get_top_k_usdt_volume_crypto,
+            self.volumer.get_fear_and_greed_index,
+            self.retriever_tool,
+        ]
+        self.llm_with_tools = self.model.bind_tools(self.tools)
+
+    def _initialize_model(self):
+        """Initialize the AI model and bind tools."""
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name=self.embedding_model_name,
+            model_kwargs={"device": "cpu", "trust_remote_code": True},
+        )
+        self.qdrant_client = QdrantClient(
+            url=os.getenv("QDRANT_URL"), api_key=os.getenv("API_KEY_QDRANT")
+        )
+
+        self.qdrant_vector_store = QdrantVectorStore(
+            client=self.qdrant_client,
+            collection_name=os.getenv("COLLECTION_NAME", "default_collection"),
+            embedding=self.embeddings,
+        )
+
         self.aggregator = CryptoNewsAggregator(
             self.news_api_key,
             self.reddit_client_id,
@@ -87,105 +131,18 @@ class CryptoSupporterAgent:
             self.binance_api_secret,
         )
 
-        self.volumer = CryptoData(self.binance_api_key, self.binance_api_secret,)
-        qdrant_handler=QdrantHandler()
-
-        model_kwargs = {"device": "cpu", "trust_remote_code": True}
-
-        embeddings = HuggingFaceEmbeddings(
-                    model_name=self.embedding_model_name, model_kwargs=model_kwargs
-                )
-
-
-
-        # qdrant = QdrantVectorStore.from_existing_collection(
-        #     embedding=embeddings,
-        #     collection_name=os.getenv("COLLECTION_NAME", "default_collection"),
-        #     url="http://localhost:6333",
-        # )
-
-        # DOCUMENTS = [
-        #     Document(page_content="Duong Tri Dung\nPhone number: (+61) 411948899", metadata={"source": "tweet"}),
-        #     Document(page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.", metadata={"source": "news"}),
-        #     Document(page_content="Building an exciting new project with LangChain - come check it out!", metadata={"source": "tweet"}),
-        #     # Document(page_content="Robbers broke into the city bank and stole $1 million in cash.", metadata={"source": "news"}),
-        #     # Document(page_content="Wow! That was an amazing movie. I can't wait to see it again.", metadata={"source": "tweet"}),
-        #     # Document(page_content="Is the new iPhone worth the price? Read this review to find out.", metadata={"source": "website"}),
-        #     # Document(page_content="The top 10 soccer players in the world right now.", metadata={"source": "website"}),
-        #     # Document(page_content="LangGraph is the best framework for building stateful, agentic applications!", metadata={"source": "tweet"}),
-        #     # Document(page_content="The stock market is down 500 points today due to fears of a recession.", metadata={"source": "news"}),
-        #     # Document(page_content="I have a bad feeling I am going to get deleted :(", metadata={"source": "tweet"}),
-        # ]
-
-        news_data = pd.read_csv("dataset/aggregated_news.csv")
-        print(len(news_data))
-
-        news_data = news_data.iloc[:5, :]
-
-        # Convert each row to a Document object
-        documents = [
-            Document(
-                page_content=(
-                    f"{row.get('title', 'No title available')}\n"
-                    f"{row.get('description', 'No description available')}\n"
-                    f"Source: {row.get('source', 'Unknown source')}\n"
-                    f"URL: {row.get('url', 'No URL available')}"
-                ),
-                metadata={"keyword": row.get("keyword", "Unknown keyword")}
-            )
-            for _, row in tqdm(news_data.iterrows(), total=news_data.shape[0])
-        ]
-        print(len(documents))
-
-        qdrant_vector_store = QdrantVectorStore.from_documents(
-            documents,
-            embeddings,
-            url=os.getenv("QDRANT_URL"),
-            prefer_grpc=True,
-            api_key=os.getenv("API_KEY_QDRANT"),
-            collection_name=os.getenv("COLLECTION_NAME", "default_collection"),
-        )
-        retriever = qdrant_vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 10})
-
-
-        # print("XXXXXXX")
-        # res = (retriever.invoke("Duong Tri Dung"))
-        # print(res)
-        # print("XXXXXXX")
-        # pdb.set_trace()retriever.invoke("Stealing from the bank is a crime")
-
-
-
-        # retriever = qdrant_handler.vector_store
-        self.retriever_tool = create_retriever_tool(
-            retriever,
-            name="retriever",
-            description = "Retrieve latest news about cryptocurrency, crypto symbol from Google and Reddits",
+        self.volumer = CryptoData(
+            self.binance_api_key,
+            self.binance_api_secret,
         )
 
-        # self.retriever_tool = qdrant_handler.retriever_tool
-        self.search_tool = DuckDuckGoSearchRun()
-        self.tools = [
-            self.aggregator.aggregate_news,
-            self.analysis.calculate_technical_indicators,
-            self.search_tool,
-            self.volumer.get_volumes_for_symbols,
-            self.volumer.get_top_k_usdt_volume_crypto,
-            self.volumer.get_fear_and_greed_index,
-            self.retriever_tool 
-        ]
+        self.model = AzureChatOpenAI(
+            azure_endpoint=self.AZURE_ENDPOINT,
+            deployment_name=self.OPENAI_ENGINE,
+            openai_api_key=self.APIKEY_GPT4,
+            openai_api_version=self.API_VERSION,
+        )
 
-
-
-    def _initialize_model(self):
-        """Initialize the AI model and bind tools."""
-        # self.model = ChatOpenAI(model="gpt-4o", api_key=self.openai_api_key)
-        self.model = AzureChatOpenAI(azure_endpoint=self.AZURE_ENDPOINT, 
-                                 deployment_name=self.OPENAI_ENGINE,
-                                 openai_api_key=self.APIKEY_GPT4,
-                                 openai_api_version=self.API_VERSION)
-
-        self.llm_with_tools = self.model.bind_tools(self.tools)
 
         self.system_prompt = """
 
@@ -213,47 +170,57 @@ class CryptoSupporterAgent:
         self.sys_msg = SystemMessage(content=self.system_prompt)
         self.config = {"configurable": {"thread_id": "1"}}
 
+
+    def plot_chart(self, state: MessagesState) -> None:
+        tool_message: ToolMessage = state["messages"][-1]
+        print(tool_message)
+        # pdb.set_trace()
+        table = tool_message.artifact
+        x_axis, y_axis = table.index, table['close']
+        plt.figure(figsize=(10, 5))
+        plt.plot(x_axis, y_axis, marker="o")
+        plt.title("Price History")
+        plt.xlabel("Date")
+        plt.ylabel("Price")
+        plt.grid(True)
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        # plt.show()
+        path = "123.png"
+        plt.savefig(path)
+        plt.close()
+        print(f"Your chart is saved as {path}")
+
+
     def _initialize_graph(self):
         """Build and compile the state graph with memory."""
         self.builder = StateGraph(MessagesState)
 
-        # Add nodes
         self.builder.add_node("reasoner", self._reasoner)
-        # self.builder.add_node("retrieve_qdrant", ToolNode([self.retriever_tool]))
         self.builder.add_node("tools", ToolNode(self.tools))
+        self.builder.add_node("plot", self.plot_chart)
 
-        # Add edges
         self.builder.add_edge(START, "reasoner")
         self.builder.add_conditional_edges("reasoner", tools_condition)
         self.builder.add_edge("tools", "reasoner")
-        # self.builder.add_edge("retrieve_qdrant", "reasoner")  # Add edge for retriever node
-        self.builder.add_edge("reasoner", END)  # Mark the end of the process
+        self.builder.add_edge("reasoner", "plot")
+        self.builder.add_edge("plot", END)
 
-        # Compile the graph with memory integration
         self.react_graph = self.builder.compile(checkpointer=self.memory)
 
     def _reasoner(self, state: MessagesState):
         """Reasoner function that processes messages."""
-        return {"messages": [self.llm_with_tools.invoke([self.sys_msg] + state["messages"])]}
+        return {
+            "messages": [self.llm_with_tools.invoke([self.sys_msg] + state["messages"])]
+        }
 
     def get_last_ai_message_content(self, response):
-        """
-        Extracts the content of the last AIMessage from a generator of response events.
-
-        Args:
-            response (generator): A generator containing response events.
-
-        Returns:
-            str: Content of the last AIMessage or an empty string if not found.
-        """
         last_ai_message_content = ""
         for event in response:
-            # Iterate through the messages in the event
             for message in event.get("messages", []):
                 if isinstance(message, AIMessage):
-                    last_ai_message_content = message.content  # Update with the latest AIMessage content
+                    last_ai_message_content = message.content
         return last_ai_message_content
-
 
     def print_stream(self, stream):
         last_ai_message_content = ""
@@ -266,13 +233,12 @@ class CryptoSupporterAgent:
 
             for message in s.get("messages", []):
                 if isinstance(message, AIMessage):
-                    last_ai_message_content = message.content  # Update with the latest AIMessage content
+                    last_ai_message_content = message.content
         return last_ai_message_content
-    
+
     def process_message(self, message: str):
-        """Process a single user message through the graph."""
         response = self.react_graph.stream(
             {"messages": [("user", message)]}, self.config, stream_mode="values"
         )
-        messages=self.print_stream(response)
+        messages = self.print_stream(response)
         return messages

@@ -15,6 +15,7 @@ from src.online_retriever.telegram import get_latest_posts
 from src.tools.bitcoin_predict import BitcoinPredictor
 from src.db.index import QdrantHandler
 
+
 def create_query_engine_tools(
     binance_api_key,
     binance_api_secret,
@@ -22,17 +23,18 @@ def create_query_engine_tools(
     reddit_client_id,
     reddit_client_secret,
     reddit_user_agent="hello",
-):  
-    fed_data_path='dataset/interest_rate.xlsx'
+):
+    fed_data_path = "dataset/interest_rate.xlsx"
     pump_instance = CryptoPumpActivity(binance_api_key, binance_api_secret)
     aggregator = CryptoNewsAggregator(
         news_api_key, reddit_client_id, reddit_client_secret, reddit_user_agent
     )
     analysis = MarketTrendAnalysis(binance_api_key, binance_api_secret)
     volumer = CryptoData(binance_api_key, binance_api_secret)
-    
-    bitcoin_predictor=BitcoinPredictor(binance_api_key, binance_api_secret, fed_data_path)
 
+    bitcoin_predictor = BitcoinPredictor(
+        binance_api_key, binance_api_secret, fed_data_path
+    )
 
     get_top_k_volume_crypto_tool = FunctionTool.from_defaults(
         fn=lambda topk: volumer.get_top_k_usdt_volume_crypto(topk),
@@ -60,7 +62,8 @@ def create_query_engine_tools(
     )
 
     aggregate_news_tool = FunctionTool.from_defaults(
-        fn=lambda keyword: aggregator.aggregate_news(keyword), name="get_news_tool",
+        fn=lambda keyword: aggregator.aggregate_news(keyword),
+        name="get_news_tool",
         description="A tool for getting news from Google news and Reddit",
     )
 
@@ -82,7 +85,6 @@ def create_query_engine_tools(
         description="A tool to get interest FED rate, bitcoin price, halving date. Please use this information and give the prediction for bitcoin price at at certain date",
     )
 
-
     all_tools = [
         get_fear_and_greed_index_tool,
         get_top_k_volume_crypto_tool,
@@ -92,7 +94,7 @@ def create_query_engine_tools(
         aggregate_news_tool,
         calculate_technical_indicators_tool,
         telegram_get_latest_posts_tool,
-        bitcoin_price_prediction_tool
+        bitcoin_price_prediction_tool,
     ]
 
     return all_tools

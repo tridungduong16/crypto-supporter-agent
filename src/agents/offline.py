@@ -14,7 +14,9 @@ from langchain_openai.llms.azure import AzureOpenAI
 from langchain_openai import AzureChatOpenAI
 from src.tools.news import CryptoNewsAggregator
 from src.tools.technical import MarketTrendAnalysis
-from langchain_core.messages.ai import AIMessage 
+from langchain_core.messages.ai import AIMessage
+
+
 class CryptoSupporterAgent:
     def __init__(self):
         # Initialize memory for persistent state tracking
@@ -71,10 +73,12 @@ class CryptoSupporterAgent:
     def _initialize_model(self):
         """Initialize the AI model and bind tools."""
         # self.model = ChatOpenAI(model="gpt-4o", api_key=self.openai_api_key)
-        self.model = AzureChatOpenAI(azure_endpoint=self.AZURE_ENDPOINT, 
-                                 deployment_name=self.OPENAI_ENGINE,
-                                 openai_api_key=self.APIKEY_GPT4,
-                                 openai_api_version=self.API_VERSION)
+        self.model = AzureChatOpenAI(
+            azure_endpoint=self.AZURE_ENDPOINT,
+            deployment_name=self.OPENAI_ENGINE,
+            openai_api_key=self.APIKEY_GPT4,
+            openai_api_version=self.API_VERSION,
+        )
 
         self.llm_with_tools = self.model.bind_tools(self.tools)
 
@@ -108,8 +112,9 @@ class CryptoSupporterAgent:
 
     def _reasoner(self, state: MessagesState):
         """Reasoner function that processes messages."""
-        return {"messages": [self.llm_with_tools.invoke([self.sys_msg] + state["messages"])]}
-
+        return {
+            "messages": [self.llm_with_tools.invoke([self.sys_msg] + state["messages"])]
+        }
 
     def get_last_ai_message_content(self, response):
         """
@@ -126,9 +131,10 @@ class CryptoSupporterAgent:
             # Iterate through the messages in the event
             for message in event.get("messages", []):
                 if isinstance(message, AIMessage):
-                    last_ai_message_content = message.content  # Update with the latest AIMessage content
+                    last_ai_message_content = (
+                        message.content
+                    )  # Update with the latest AIMessage content
         return last_ai_message_content
-
 
     def process_message(self, message: str):
         """Process a single user message through the graph."""
@@ -136,7 +142,7 @@ class CryptoSupporterAgent:
         response = self.react_graph.stream(
             {"messages": [("user", message)]}, config, stream_mode="values"
         )
-        messages=self.get_last_ai_message_content(response)
+        messages = self.get_last_ai_message_content(response)
         pdb.set_trace()
         return messages
 
