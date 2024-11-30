@@ -19,12 +19,12 @@ AI
 Python Boilerplate contains all the boilerplate you need to create a Python package.
 
 docker-compose up -d
-docker build -t crypto-agent:1.1.2 .
+docker build -t crypto-agent:1.1.3 .
 git remote set-url origin https://<YOUR_USERNAME>@github.com/<YOUR_USERNAME>/<REPO_NAME>.git
 
 http://localhost:4444/
 docker run -p 8501:8501 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.2
-docker run -p 8501:8501 -p 8000:8000 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.1
+docker run -p 8501:8501 -p 8000:8000 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.3
 docker run -v /Users/z3542407/Documents/GitHub/ews-nlp-llm-inference-new:/workspaces/ai-agent ews
 
 streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501

@@ -53,27 +53,18 @@ class MarketTrendAnalysis:
 
     def plot_technical_indicators(self, df, output_file='technical_indicators.png'):
         """
-<<<<<<< HEAD
         Plot the closing price along with technical indicators using Seaborn and export the graph as a PNG file.
-=======
-        Plot the closing price along with technical indicators and export the graph as a PNG file.
->>>>>>> e2100a24e84c69af311fb28e98f28ae8b3b2d96d
 
         Args:
             df (DataFrame): DataFrame containing crypto data with technical indicators.
             output_file (str): The filename for the exported PNG file.
         """
-<<<<<<< HEAD
         sns.set(style="whitegrid")
         plt.figure(figsize=(16, 10))
-=======
-        plt.figure(figsize=(14, 8))
->>>>>>> e2100a24e84c69af311fb28e98f28ae8b3b2d96d
 
         # Check if Bollinger Bands are present in the DataFrame
         print("Columns in DataFrame:", df.columns)
 
-<<<<<<< HEAD
         # Create the plot
         ax = sns.lineplot(x=df.index, y=df['close'], label='Close Price', color='black', linewidth=2)
 
@@ -99,30 +90,6 @@ class MarketTrendAnalysis:
         plt.ylabel('Price and Indicators', fontsize=12)
         plt.legend(loc='best', fontsize=10)
         plt.tight_layout()
-=======
-        # Plot Closing Price and Bollinger Bands
-        plt.plot(df['close'], label='Close Price', color='black', linewidth=1.5)
-        if 'bb_bbm' in df.columns and 'bb_bbh' in df.columns and 'bb_bbl' in df.columns:
-            plt.plot(df['bb_bbm'], label='Bollinger Band Middle', linestyle='--', color='blue')
-            plt.plot(df['bb_bbh'], label='Bollinger Band High', linestyle='--', color='green')
-            plt.plot(df['bb_bbl'], label='Bollinger Band Low', linestyle='--', color='red')
-
-        # Add RSI (on a secondary y-axis)
-        if 'RSI' in df.columns:
-            plt.plot(df['RSI'], label='RSI', color='orange', linestyle=':', linewidth=1.5)
-            plt.axhline(70, color='red', linestyle='--', linewidth=0.8)
-            plt.axhline(30, color='green', linestyle='--', linewidth=0.8)
-
-        # Add MACD
-        if 'MACD' in df.columns:
-            plt.plot(df['MACD'], label='MACD', color='purple', linestyle='-.', linewidth=1.5)
-
-        plt.title('Crypto Price and Technical Indicators')
-        plt.xlabel('Time')
-        plt.ylabel('Price and Indicators')
-        plt.legend()
-        plt.grid(alpha=0.3)
->>>>>>> e2100a24e84c69af311fb28e98f28ae8b3b2d96d
 
         # Export to PNG
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
@@ -131,49 +98,6 @@ class MarketTrendAnalysis:
         # Show plot
         plt.show()
 
-<<<<<<< HEAD
-
-=======
-    # def get_moving_average(self, df, window=50):
-    #     """Get the moving average for a given window."""
-    #     df_with_indicators = self.calculate_technical_indicators(df)
-    #     return df_with_indicators[f'MA50'].iloc[-1]  # Return the last value of the moving average
-
-    # def get_rsi(self, df):
-    #     """Get the RSI for a given symbol."""
-    #     df_with_indicators = self.calculate_technical_indicators(df)
-    #     return df_with_indicators['RSI'].iloc[-1]
-
-    # def get_macd(self, df):
-    #     """Get the MACD for a given symbol."""
-    #     df_with_indicators = self.calculate_technical_indicators(df)
-    #     return df_with_indicators['MACD'].iloc[-1]
-
-    # def get_support_resistance(self, df):
-    #     """Get the support and resistance levels for a given cryptocurrency symbol."""
-    #     df_with_indicators = self.calculate_technical_indicators(df)
-    #     return {'support': df_with_indicators['bb_bbl'].iloc[-1], 'resistance': df_with_indicators['bb_bbh'].iloc[-1]}
-
-    def get_price_prediction(self, df):
-        """Predict the price for the next day using a trained machine learning model."""
-        df_with_indicators = self.calculate_technical_indicators(df)
-        
-        # Train a Linear Regression model to predict the next day's closing price
-        model = LinearRegression()
-        df_with_indicators = df_with_indicators.dropna(subset=['bb_bbm', 'RSI', 'MACD'])
-        X = df_with_indicators[['bb_bbm', 'RSI', 'MACD']].values
-        y = df_with_indicators['close'].shift(-1).dropna().values  # Next day's price as the target
-        X = X[:-1]  # Align X and y
-        model.fit(X, y)
-
-        # Predict the price for the next day
-        latest_data = df_with_indicators[['bb_bbm', 'RSI', 'MACD']].iloc[-1].values.reshape(1, -1)
-        predicted_price = model.predict(latest_data)[0]
-        return predicted_price
-
-
-# Example usage
->>>>>>> e2100a24e84c69af311fb28e98f28ae8b3b2d96d
 if __name__ == "__main__":
     binance_api_key = os.getenv("BINANCE_API_KEY")
     binance_api_secret = os.getenv("BINANCE_API_SECRET")
@@ -185,7 +109,6 @@ if __name__ == "__main__":
     df = trend_analyzer.calculate_technical_indicators(symbol)
     # df = trend_analyzer.get_historical_data(symbol)
 
-<<<<<<< HEAD
     trend_analyzer.plot_technical_indicators(df)
 
     # # Get Moving Average (MA50) for BTC
@@ -204,24 +127,6 @@ if __name__ == "__main__":
     # support_resistance = trend_analyzer.get_support_resistance(df)
     # print(f"Support level: {support_resistance['support']:.2f}, Resistance level: {support_resistance['resistance']:.2f}")
 
-=======
-    # Get Moving Average (MA50) for BTC
-    # ma50 = trend_analyzer.get_moving_average(df, window=50)
-    # print(f"50-Day Moving Average for {symbol}: {ma50:.2f}")
-
-    # # Get RSI for BTC
-    # rsi = trend_analyzer.get_rsi(df)
-    # print(f"RSI for {symbol}: {rsi:.2f}")
-
-    # # Get MACD for BTC
-    # macd = trend_analyzer.get_macd(df)
-    # print(f"MACD for {symbol}: {macd:.2f}")
-
-    # # Get Support and Resistance for BTC
-    # support_resistance = trend_analyzer.get_support_resistance(df)
-    # print(f"Support level: {support_resistance['support']:.2f}, Resistance level: {support_resistance['resistance']:.2f}")
-
->>>>>>> e2100a24e84c69af311fb28e98f28ae8b3b2d96d
     # # Get Price Prediction for BTC
     # predicted_price = trend_analyzer.get_price_prediction(df)
     # print(f"Predicted price for {symbol} tomorrow: {predicted_price:.2f}")

@@ -173,6 +173,8 @@ class CryptoSupporterAgent:
 
     def plot_chart(self, state: MessagesState) -> None:
         tool_message: ToolMessage = state["messages"][-1]
+        print(tool_message)
+        # pdb.set_trace()
         table = tool_message.artifact
         x_axis, y_axis = table.index, table['close']
         plt.figure(figsize=(10, 5))
@@ -195,15 +197,14 @@ class CryptoSupporterAgent:
         self.builder = StateGraph(MessagesState)
 
         self.builder.add_node("reasoner", self._reasoner)
-        self.builder.add_node("plot", self.plot_chart)
-
         self.builder.add_node("tools", ToolNode(self.tools))
+        self.builder.add_node("plot", self.plot_chart)
 
         self.builder.add_edge(START, "reasoner")
         self.builder.add_conditional_edges("reasoner", tools_condition)
         self.builder.add_edge("tools", "reasoner")
-
-        self.builder.add_edge("reasoner", END)
+        self.builder.add_edge("reasoner", "plot")
+        self.builder.add_edge("plot", END)
 
         self.react_graph = self.builder.compile(checkpointer=self.memory)
 
