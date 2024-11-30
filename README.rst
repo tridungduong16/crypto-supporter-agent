@@ -18,17 +18,13 @@ AI
 
 Python Boilerplate contains all the boilerplate you need to create a Python package.
 
-docker-compose up -d
-docker build -t crypto-agent:1.1.3 .
-git remote set-url origin https://<YOUR_USERNAME>@github.com/<YOUR_USERNAME>/<REPO_NAME>.git
+* docker build -t crypto-agent:1.1.3 .
 
-http://localhost:4444/
-docker run -p 8501:8501 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.2
-docker run -p 8501:8501 -p 8000:8000 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.3
-docker run -v /Users/z3542407/Documents/GitHub/ews-nlp-llm-inference-new:/workspaces/ai-agent ews
+* http://localhost:4444/
+* docker run -p 8501:8501 -p 8000:8000 -v /Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.3
 
-streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501
-python -m uvicorn src.agents.main:app --host 0.0.0.0 --port 8000 --reload
+* streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501
+* python -m uvicorn src.agents.main:app --host 0.0.0.0 --port 8000 --reload
 
 * Free software: MIT license
 * Documentation: https://ai.readthedocs.io.
