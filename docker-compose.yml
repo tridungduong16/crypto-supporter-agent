@@ -8,6 +8,9 @@ services:
       - "8000:8000"
     networks:
       - app-network
+    volumes:
+          - /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent
+
 
   streamlit:
     build:
@@ -17,6 +20,9 @@ services:
       - "8501:8501"
     networks:
       - app-network
+    volumes:
+          - /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent
+
 
 networks:
   app-network:
