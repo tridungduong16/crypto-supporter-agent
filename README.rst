@@ -21,6 +21,9 @@ Python Boilerplate contains all the boilerplate you need to create a Python pack
 
 * docker-compose build
 * docker-compose up   
+OR
+* docker-compose up --build
+
 * http://0.0.0.0:8501/
 * http://0.0.0.0:8000/docs
 
