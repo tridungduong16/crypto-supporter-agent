@@ -18,12 +18,11 @@ AI
 
 Python Boilerplate contains all the boilerplate you need to create a Python package.
 
-* docker build -t crypto-agent:1.1.3 .
-* docker run -p 8501:8501 -p 8000:8000 -v /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent crypto-agent:1.1.3
-/Users/z3542407/Documents/GitHub/crypto-supporter-agent/AUTHORS.rst
 
-
-
+* docker-compose build
+* docker-compose up   
+* http://0.0.0.0:8501/
+* http://0.0.0.0:8000/docs
 
 * Free software: MIT license
 * Documentation: https://ai.readthedocs.io.

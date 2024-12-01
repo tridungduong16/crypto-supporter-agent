@@ -79,9 +79,9 @@ RUN pip install streamlit
 
 EXPOSE 4444 4444
 
-# CMD ["tail", "-f", "/dev/null"]
+CMD ["tail", "-f", "/dev/null"]
 # CMD ["uvicorn", "src.agents.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # CMD ["sh", "-c", "uvicorn src.agents.main:app --host 0.0.0.0 --port 8000 --reload && streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501"]
-COPY start.sh /start.sh
-CMD ["/start.sh"]
+# COPY start.sh /start.sh
+# CMD ["/start.sh"]

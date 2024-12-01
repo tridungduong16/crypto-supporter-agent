@@ -171,25 +171,25 @@ class CryptoSupporterAgent:
         self.config = {"configurable": {"thread_id": "1"}}
 
 
-    def plot_chart(self, state: MessagesState) -> None:
-        tool_message: ToolMessage = state["messages"][-1]
-        print(tool_message)
-        # pdb.set_trace()
-        table = tool_message.artifact
-        x_axis, y_axis = table.index, table['close']
-        plt.figure(figsize=(10, 5))
-        plt.plot(x_axis, y_axis, marker="o")
-        plt.title("Price History")
-        plt.xlabel("Date")
-        plt.ylabel("Price")
-        plt.grid(True)
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        # plt.show()
-        path = "123.png"
-        plt.savefig(path)
-        plt.close()
-        print(f"Your chart is saved as {path}")
+    # def plot_chart(self, state: MessagesState) -> None:
+    #     tool_message: ToolMessage = state["messages"][-1]
+    #     print(tool_message)
+    #     # pdb.set_trace()
+    #     table = tool_message.artifact
+    #     x_axis, y_axis = table.index, table['close']
+    #     plt.figure(figsize=(10, 5))
+    #     plt.plot(x_axis, y_axis, marker="o")
+    #     plt.title("Price History")
+    #     plt.xlabel("Date")
+    #     plt.ylabel("Price")
+    #     plt.grid(True)
+    #     plt.xticks(rotation=45)
+    #     plt.tight_layout()
+    #     # plt.show()
+    #     path = "123.png"
+    #     plt.savefig(path)
+    #     plt.close()
+    #     print(f"Your chart is saved as {path}")
 
 
     def _initialize_graph(self):

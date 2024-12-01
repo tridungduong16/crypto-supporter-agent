@@ -2,7 +2,8 @@ import streamlit as st
 import requests
 
 # FastAPI endpoint
-FASTAPI_URL = "http://127.0.0.1:8000/ask"  # Replace with your FastAPI server URL
+# FASTAPI_URL = "http://127.0.0.1:8000/ask"  # Replace with your FastAPI server URL
+FASTAPI_URL = "http://uvicorn:8000/ask"  # Use the service name 'uvicorn' as the hostname
 
 # Page configuration
 st.set_page_config(page_title="SatoshiSeal", layout="wide")
