@@ -1,7 +1,7 @@
 .env
 models
 dataset
-db
+# db
 tridungduong.session
 src/tools/__pycache__/news.cpython-39.pyc
 src/tools/__pycache__/technical.cpython-39.pyc
