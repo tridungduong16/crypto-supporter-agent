@@ -23,6 +23,5 @@ services:
     volumes:
           - /Users/z3542407/Documents/GitHub/crypto-supporter-agent:/workspaces/ai-agent
 
-
 networks:
   app-network:
