@@ -1,13 +1,22 @@
 version: '3.9'
 services:
   uvicorn:
-    build: .
+    build:
+      context: .
     command: uvicorn src.agents.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
+    networks:
+      - app-network
 
   streamlit:
-    build: .
+    build:
+      context: .
     command: streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501
     ports:
       - "8501:8501"
+    networks:
+      - app-network
+
+networks:
+  app-network:
