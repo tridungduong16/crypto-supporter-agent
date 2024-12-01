@@ -36,3 +36,5 @@ matplotlib
 telethon
 langchain-huggingface
 langchain-qdrant
+praw
+seaborn

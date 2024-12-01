@@ -196,17 +196,21 @@ class CryptoSupporterAgent:
         """Build and compile the state graph with memory."""
         self.builder = StateGraph(MessagesState)
 
+        # Add nodes
         self.builder.add_node("reasoner", self._reasoner)
+        # self.builder.add_node("retrieve_qdrant", ToolNode([self.retriever_tool]))
         self.builder.add_node("tools", ToolNode(self.tools))
-        self.builder.add_node("plot", self.plot_chart)
 
+        # Add edges
         self.builder.add_edge(START, "reasoner")
         self.builder.add_conditional_edges("reasoner", tools_condition)
         self.builder.add_edge("tools", "reasoner")
-        self.builder.add_edge("reasoner", "plot")
-        self.builder.add_edge("plot", END)
+        # self.builder.add_edge("retrieve_qdrant", "reasoner")  # Add edge for retriever node
+        self.builder.add_edge("reasoner", END)  # Mark the end of the process
 
+        # Compile the graph with memory integration
         self.react_graph = self.builder.compile(checkpointer=self.memory)
+
 
     def _reasoner(self, state: MessagesState):
         """Reasoner function that processes messages."""

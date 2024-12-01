@@ -1,25 +1,13 @@
-version: '3.8'
+version: '3.9'
 services:
-  qdrant:
-    image: qdrant/qdrant:v1.0.0
-    container_name: qdrant
+  uvicorn:
+    build: .
+    command: uvicorn src.agents.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
-      - "4444:6333"   # Expose Qdrant internal port 6333 on port 4444
-    volumes:
-      - qdrant_storage:/qdrant/storage  # Store Qdrant data persistently
+      - "8000:8000"
 
-  ai-agent:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ai-agent
-    depends_on:
-      - qdrant
-    environment:
-      QDRANT_HOST: "qdrant"
-      QDRANT_PORT: 4444
-    volumes:
-      - .:/workspaces/ai-agent
-
-volumes:
-  qdrant_storage:
+  streamlit:
+    build: .
+    command: streamlit run src/chatbot_interface.py --server.address=0.0.0.0 --server.port=8501
+    ports:
+      - "8501:8501"
