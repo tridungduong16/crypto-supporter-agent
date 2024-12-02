@@ -76,7 +76,7 @@ RUN pip install ta
 RUN pip install PyPDF2
 RUN pip install -U duckduckgo-search
 RUN pip install streamlit
-
+RUN pip install ipython
 EXPOSE 4444 4444
 
 CMD ["tail", "-f", "/dev/null"]

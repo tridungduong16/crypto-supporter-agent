@@ -47,6 +47,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
+from IPython.display import Image, display
 
 class CryptoSupporterAgent:
     def __init__(self):
@@ -100,6 +101,8 @@ class CryptoSupporterAgent:
             self.volumer.get_top_k_usdt_volume_crypto,
             self.volumer.get_fear_and_greed_index,
             self.retriever_tool,
+            self.plot_chart,
+            self.analysis.get_historical_data
         ]
         self.llm_with_tools = self.model.bind_tools(self.tools)
 
@@ -171,45 +174,79 @@ class CryptoSupporterAgent:
         self.config = {"configurable": {"thread_id": "1"}}
 
 
-    # def plot_chart(self, state: MessagesState) -> None:
-    #     tool_message: ToolMessage = state["messages"][-1]
-    #     print(tool_message)
-    #     # pdb.set_trace()
-    #     table = tool_message.artifact
-    #     x_axis, y_axis = table.index, table['close']
-    #     plt.figure(figsize=(10, 5))
-    #     plt.plot(x_axis, y_axis, marker="o")
-    #     plt.title("Price History")
-    #     plt.xlabel("Date")
-    #     plt.ylabel("Price")
-    #     plt.grid(True)
-    #     plt.xticks(rotation=45)
-    #     plt.tight_layout()
-    #     # plt.show()
-    #     path = "123.png"
-    #     plt.savefig(path)
-    #     plt.close()
-    #     print(f"Your chart is saved as {path}")
+    def plot_chart(self, dataframe) -> None:
+        """
+        Generates and saves a line chart based on the given dataframe.
+
+        The function plots the "close" column of the dataframe against its index, 
+        formats the chart with labels, a title, and gridlines, and saves the 
+        resulting image as "123.png" in the current directory.
+
+        Parameters:
+        ----------
+        dataframe : pandas.DataFrame
+            The input dataframe containing the data to plot. It should have:
+            - An index representing the x-axis (e.g., dates).
+            - A column named "close" representing the y-axis values.
+
+        Returns:
+        -------
+        None
+            The function saves the chart as a PNG file and does not return any value.
+
+        Side Effects:
+        -------------
+        - A file named "123.png" is saved in the current directory.
+        - A message indicating the file's save location is printed to the console.
+
+        Example:
+        --------
+        >>> import pandas as pd
+        >>> data = {'close': [100, 110, 105, 115]}
+        >>> df = pd.DataFrame(data, index=["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"])
+        >>> my_object = MyClass()
+        >>> my_object.plot_chart(df)
+        Your chart is saved as 123.png
+        """
+        x_axis, y_axis = dataframe.index, dataframe['close']
+        plt.figure(figsize=(10, 5))
+        plt.plot(x_axis, y_axis, marker="o")
+        plt.title("Price History")
+        plt.xlabel("Date")
+        plt.ylabel("Price")
+        plt.grid(True)
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        path = "123.png"
+        plt.savefig(path)
+        plt.close()
+        print(f"Your chart is saved as {path}")
 
 
     def _initialize_graph(self):
         """Build and compile the state graph with memory."""
         self.builder = StateGraph(MessagesState)
-
-        # Add nodes
         self.builder.add_node("reasoner", self._reasoner)
-        # self.builder.add_node("retrieve_qdrant", ToolNode([self.retriever_tool]))
         self.builder.add_node("tools", ToolNode(self.tools))
-
-        # Add edges
+       
         self.builder.add_edge(START, "reasoner")
         self.builder.add_conditional_edges("reasoner", tools_condition)
         self.builder.add_edge("tools", "reasoner")
-        # self.builder.add_edge("retrieve_qdrant", "reasoner")  # Add edge for retriever node
-        self.builder.add_edge("reasoner", END)  # Mark the end of the process
+        self.builder.add_edge("reasoner", END)
 
         # Compile the graph with memory integration
         self.react_graph = self.builder.compile(checkpointer=self.memory)
+
+        output_path = "diagram.png"  # Specify the file path to save the image
+        try:
+            image = Image(self.react_graph.get_graph(xray=True).draw_mermaid_png())            
+            display(image)
+            with open(output_path, "wb") as f:
+                f.write(image.data)
+            print(f"Diagram saved to {output_path}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            
 
 
     def _reasoner(self, state: MessagesState):

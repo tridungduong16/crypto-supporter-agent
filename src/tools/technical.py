@@ -20,7 +20,7 @@ class MarketTrendAnalysis:
 
     def get_historical_data(self, symbol, interval='4h', limit=500):
         """Fetch historical data for a specific cryptocurrency pair from Binance."""
-        symbol += "USDT"
+        # symbol += "USDT"
         klines = self.client.get_historical_klines(symbol, interval, limit=limit)
         df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 
                                            'close_time', 'quote_asset_volume', 'number_of_trades', 
